@@ -5,6 +5,8 @@ All of the models are stored in this module
 """
 import logging
 from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime
+import enum
 
 logger = logging.getLogger("flask.app")
 
@@ -18,19 +20,30 @@ class DataValidationError(Exception):
     pass
 
 
-class YourResourceModel(db.Model):
+class Inventory(db.Model):
     """
-    Class that represents a YourResourceModel
+    Class that represents a Inventory
     """
+
+    class Status(enum.Enum):
+        NEW = "new"
+        REFURBISHED = "refurbished"
+        RETURN = "return"
 
     app = None
 
     # Table Schema
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(63))
+    item = db.Column(db.String(63), nullable=False)
+    category = db.Column(db.String(63), nullable=False)
+    status = db.Column(enum.Enum(Status), nullable=False)
+    quantity = db.Column(db.Integer, nullable=False)
+    expiry = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     def __repr__(self):
-        return "<YourResourceModel %r id=[%s]>" % (self.name, self.id)
+        return "<Inventory %r id=[%s]>" % (self.item, self.id)
 
     def create(self):
         """
