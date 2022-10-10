@@ -33,24 +33,24 @@ class Inventory(db.Model):
     app = None
 
     # Table Schema
-    id = db.Column(db.Integer, primary_key=True)
-    item = db.Column(db.String(63), nullable=False)
-    category = db.Column(db.String(63), nullable=False)
-    status = db.Column(enum.Enum(Status), nullable=False)
-    quantity = db.Column(db.Integer, nullable=False)
-    expiry = db.Column(db.DateTime, nullable=True)
+    product_id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(63), nullable=False)
+    status = db.Column(db.Enum(Status), nullable=False, default=Status.NEW.name, primary_key=True)
+    quantity = db.Column(db.Integer, nullable=False, default=0)
+    restock_level = db.Column(db.Integer, nullable=False, default=0)
+    active = db.Column(db.Boolean, nullable=False, default=True)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     def __repr__(self):
-        return "<Inventory %r id=[%s]>" % (self.item, self.id)
+        return "<Inventory %r id=[%s]>" % (self.name, self.product_id)
 
     def create(self):
         """
         Creates a YourResourceModel to the database
         """
         logger.info("Creating %s", self.name)
-        self.id = None  # id must be none to generate next primary key
+        self.product_id = None  # id must be none to generate next primary key
         db.session.add(self)
         db.session.commit()
 
@@ -69,7 +69,7 @@ class Inventory(db.Model):
 
     def serialize(self):
         """ Serializes a YourResourceModel into a dictionary """
-        return {"id": self.id, "name": self.name}
+        return {"id": self.product_id, "name": self.name}
 
     def deserialize(self, data):
         """
