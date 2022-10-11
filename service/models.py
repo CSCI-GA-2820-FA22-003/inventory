@@ -5,6 +5,8 @@ All of the models are stored in this module
 """
 import logging
 from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime
+import enum
 
 logger = logging.getLogger("flask.app")
 
@@ -18,26 +20,37 @@ class DataValidationError(Exception):
     pass
 
 
-class YourResourceModel(db.Model):
+class Inventory(db.Model):
     """
-    Class that represents a YourResourceModel
+    Class that represents a Inventory
     """
+
+    class Status(enum.Enum):
+        NEW = "new"
+        REFURBISHED = "refurbished"
+        RETURN = "return"
 
     app = None
 
     # Table Schema
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(63))
+    product_id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(63), nullable=False)
+    status = db.Column(db.Enum(Status), nullable=False, default=Status.NEW.name, primary_key=True)
+    quantity = db.Column(db.Integer, nullable=False, default=0)
+    restock_level = db.Column(db.Integer, nullable=False, default=0)
+    active = db.Column(db.Boolean, nullable=False, default=True)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     def __repr__(self):
-        return "<YourResourceModel %r id=[%s]>" % (self.name, self.id)
+        return "<Inventory %r id=[%s]>" % (self.name, self.product_id)
 
     def create(self):
         """
         Creates a YourResourceModel to the database
         """
         logger.info("Creating %s", self.name)
-        self.id = None  # id must be none to generate next primary key
+        self.product_id = None  # id must be none to generate next primary key
         db.session.add(self)
         db.session.commit()
 
@@ -56,7 +69,7 @@ class YourResourceModel(db.Model):
 
     def serialize(self):
         """ Serializes a YourResourceModel into a dictionary """
-        return {"id": self.id, "name": self.name}
+        return {"id": self.product_id, "name": self.name}
 
     def deserialize(self, data):
         """
