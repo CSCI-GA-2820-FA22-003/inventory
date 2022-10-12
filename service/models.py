@@ -1,5 +1,5 @@
 """
-Models for YourResourceModel
+Models for Inventory
 
 All of the models are stored in this module
 """
@@ -33,7 +33,7 @@ class Inventory(db.Model):
     app = None
 
     # Table Schema
-    product_id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(63), nullable=False)
     status = db.Column(db.Enum(Status), nullable=False, default=Status.NEW.name, primary_key=True)
     quantity = db.Column(db.Integer, nullable=False, default=0)
@@ -44,26 +44,26 @@ class Inventory(db.Model):
     updated_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     def __repr__(self):
-        return "<Inventory %r id=[%s]>" % (self.name, self.product_id)
+        return "<Inventory %r id=[%s]>" % (self.name, self.id)
 
     def create(self):
         """
-        Creates a YourResourceModel to the database
+        Creates a Inventory to the database
         """
         logger.info("Creating %s", self.name)
-        self.product_id = None  # id must be none to generate next primary key
+        self.id = None  # id must be none to generate next primary key
         db.session.add(self)
         db.session.commit()
 
     def update(self):
         """
-        Updates a YourResourceModel to the database
+        Updates a Inventory to the database
         """
         logger.info("Saving %s", self.name)
         db.session.commit()
 
     def delete(self):
-        """ Removes a YourResourceModel from the data store """
+        """ Removes a Inventory from the data store """
         logger.info("Deleting %s", self.name)
         db.session.delete(self)
         db.session.commit()
@@ -71,9 +71,9 @@ class Inventory(db.Model):
     def serialize(self):
         """ Serializes a Inventory into a dictionary """
         return {
-            "id": self.product_id,
+            "id": self.id,
             "name": self.name,
-            "status": self.status,
+            "status": self.status.value,
             "quantity": self.quantity,
             "reorder_quantity": self.reorder_quantity,
             "restock_level": self.restock_level
@@ -87,18 +87,19 @@ class Inventory(db.Model):
             data (dict): A dictionary containing the resource data
         """
         try:
+            self.id = data["id"]
             self.name = data["name"]
-            self.status = data["status"]
+            self.status = self.Status(data["status"])
             self.quantity = data["quantity"]
             self.reorder_quantity = data["reorder_quantity"]
             self.restock_level = data["restock_level"]
         except KeyError as error:
             raise DataValidationError(
-                "Invalid YourResourceModel: missing " + error.args[0]
+                "Invalid Inventory: missing " + error.args[0]
             )
         except TypeError as error:
             raise DataValidationError(
-                "Invalid YourResourceModel: body of request contained bad or no data - "
+                "Invalid Inventory: body of request contained bad or no data - "
                 "Error message: " + error
             )
         return self
@@ -115,22 +116,22 @@ class Inventory(db.Model):
 
     @classmethod
     def all(cls):
-        """ Returns all of the YourResourceModels in the database """
-        logger.info("Processing all YourResourceModels")
+        """ Returns all of the Inventories in the database """
+        logger.info("Processing all Inventories")
         return cls.query.all()
 
     @classmethod
     def find(cls, by_id):
-        """ Finds a YourResourceModel by it's ID """
+        """ Finds a Inventory by it's ID """
         logger.info("Processing lookup for id %s ...", by_id)
         return cls.query.get(by_id)
 
     @classmethod
     def find_by_name(cls, name):
-        """Returns all YourResourceModels with the given name
+        """Returns all Inventories with the given name
 
         Args:
-            name (string): the name of the YourResourceModels you want to match
+            name (string): the name of the Inventories you want to match
         """
         logger.info("Processing name query for %s ...", name)
         return cls.query.filter(cls.name == name)
