@@ -1,40 +1,62 @@
 """
-Test cases for YourResourceModel Model
+Test cases for Inventory Model
 
 """
 import os
 import logging
 import unittest
-from service.models import YourResourceModel, DataValidationError, db
+from service import app
+from service.models import Inventory, DataValidationError, db
+
+DATABASE_URI = os.getenv(
+    "DATABASE_URI", "postgresql://postgres:postgres@localhost:5432/testdb"
+)
 
 ######################################################################
-#  <your resource name>   M O D E L   T E S T   C A S E S
+#  Inventory   M O D E L   T E S T   C A S E S
 ######################################################################
-class TestYourResourceModel(unittest.TestCase):
-    """ Test Cases for YourResourceModel Model """
+class TestInventory(unittest.TestCase):
+    """ Test Cases for Inventory Model """
 
     @classmethod
     def setUpClass(cls):
         """ This runs once before the entire test suite """
-        pass
+        app.config["TESTING"] = True
+        app.config["DEBUG"] = False
+        app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URI
+        app.logger.setLevel(logging.CRITICAL)
+        Inventory.init_db(app)
 
     @classmethod
     def tearDownClass(cls):
         """ This runs once after the entire test suite """
-        pass
+        db.session.close()
 
     def setUp(self):
         """ This runs before each test """
-        pass
+        db.session.query(Inventory).delete()  # clean up the last tests
+        db.session.commit()
 
     def tearDown(self):
         """ This runs after each test """
-        pass
+        db.session.remove()
 
     ######################################################################
     #  T E S T   C A S E S
     ######################################################################
 
-    def test_XXXX(self):
+    def test_instantiate_inventory_record(self):
         """ It should always be true """
-        self.assertTrue(True)
+        print("hello")
+        inventory_records = Inventory.all()
+        self.assertEqual(inventory_records, [])
+
+        record = Inventory(name="monitor", status=Inventory.Status.NEW, quantity=10, reorder_quantity=20, restock_level=2)
+        self.assertTrue(record is not None)
+        self.assertEqual(str(record), "<Inventory %r id=[%s]>" % ("monitor", "None"))
+        self.assertEqual(record.product_id, None)
+        self.assertEqual(record.name, "monitor")
+        self.assertEqual(record.status.name, Inventory.Status.NEW.name)
+        self.assertEqual(record.quantity, 10)
+        self.assertEqual(record.reorder_quantity, 20)
+        self.assertEqual(record.restock_level, 2)
