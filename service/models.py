@@ -37,6 +37,7 @@ class Inventory(db.Model):
     name = db.Column(db.String(63), nullable=False)
     status = db.Column(db.Enum(Status), nullable=False, default=Status.NEW.name, primary_key=True)
     quantity = db.Column(db.Integer, nullable=False, default=0)
+    reorder_quantity = db.Column(db.Integer, nullable=False, default=0)
     restock_level = db.Column(db.Integer, nullable=False, default=0)
     active = db.Column(db.Boolean, nullable=False, default=True)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
@@ -68,18 +69,29 @@ class Inventory(db.Model):
         db.session.commit()
 
     def serialize(self):
-        """ Serializes a YourResourceModel into a dictionary """
-        return {"id": self.product_id, "name": self.name}
+        """ Serializes a Inventory into a dictionary """
+        return {
+            "id": self.product_id,
+            "name": self.name,
+            "status": self.status,
+            "quantity": self.quantity,
+            "reorder_quantity": self.reorder_quantity,
+            "restock_level": self.restock_level
+        }
 
     def deserialize(self, data):
         """
-        Deserializes a YourResourceModel from a dictionary
+        Deserializes a Inventory from a dictionary
 
         Args:
             data (dict): A dictionary containing the resource data
         """
         try:
             self.name = data["name"]
+            self.status = data["status"]
+            self.quantity = data["quantity"]
+            self.reorder_quantity = data["reorder_quantity"]
+            self.restock_level = data["restock_level"]
         except KeyError as error:
             raise DataValidationError(
                 "Invalid YourResourceModel: missing " + error.args[0]
