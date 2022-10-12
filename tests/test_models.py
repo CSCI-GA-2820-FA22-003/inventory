@@ -46,17 +46,51 @@ class TestInventory(unittest.TestCase):
     ######################################################################
 
     def test_instantiate_inventory_record(self):
-        """ It should always be true """
-        print("hello")
         inventory_records = Inventory.all()
         self.assertEqual(inventory_records, [])
 
         record = Inventory(name="monitor", status=Inventory.Status.NEW, quantity=10, reorder_quantity=20, restock_level=2)
         self.assertTrue(record is not None)
         self.assertEqual(str(record), "<Inventory %r id=[%s]>" % ("monitor", "None"))
-        self.assertEqual(record.product_id, None)
+        self.assertEqual(record.id, None)
         self.assertEqual(record.name, "monitor")
-        self.assertEqual(record.status.name, Inventory.Status.NEW.name)
+        self.assertEqual(record.status, Inventory.Status.NEW)
         self.assertEqual(record.quantity, 10)
         self.assertEqual(record.reorder_quantity, 20)
         self.assertEqual(record.restock_level, 2)
+
+    def test_inventory_serialize(self):
+        record = Inventory(id=1, name="monitor", status=Inventory.Status.NEW, quantity=10, reorder_quantity=20, restock_level=2)
+        actual_output = record.serialize()
+        expected_output = {
+            "id": 1,
+            "name": "monitor",
+            "status": Inventory.Status.NEW.value,
+            "quantity": 10,
+            "reorder_quantity": 20,
+            "restock_level": 2
+        }
+        self.assertEqual(actual_output, expected_output)
+
+    def test_inventory_deserialize(self):
+        data = {
+            "id": 1,
+            "name": "monitor",
+            "status": Inventory.Status.NEW.value,
+            "quantity": 10,
+            "reorder_quantity": 20,
+            "restock_level": 2
+        }
+        record = Inventory()
+        record.deserialize(data)
+        self.assertEqual(record.id, 1)
+        self.assertEqual(record.name, "monitor")
+        self.assertEqual(record.status, Inventory.Status.NEW)
+        self.assertEqual(record.quantity, 10)
+        self.assertEqual(record.reorder_quantity, 20)
+        self.assertEqual(record.restock_level, 2)
+
+    def test_invalid_inventory_deserialize(self):
+        data = {}
+        record = Inventory()
+        self.assertRaises(DataValidationError, record.deserialize, data)
