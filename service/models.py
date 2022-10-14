@@ -8,6 +8,7 @@ from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 import enum
 
+
 logger = logging.getLogger("flask.app")
 
 # Create the SQLAlchemy object to be initialized later in init_db()
@@ -25,7 +26,7 @@ class Inventory(db.Model):
     Class that represents a Inventory
     """
 
-    class Status(enum.Enum):
+    class Condition(enum.Enum):
         NEW = "new"
         REFURBISHED = "refurbished"
         RETURN = "return"
@@ -35,7 +36,7 @@ class Inventory(db.Model):
     # Table Schema
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(63), nullable=False)
-    status = db.Column(db.Enum(Status), nullable=False, default=Status.NEW.name, primary_key=True)
+    condition = db.Column(db.Enum(Condition), nullable=False, default=Condition.NEW.name, primary_key=True)
     quantity = db.Column(db.Integer, nullable=False, default=0)
     reorder_quantity = db.Column(db.Integer, nullable=False, default=0)
     restock_level = db.Column(db.Integer, nullable=False, default=0)
@@ -73,7 +74,7 @@ class Inventory(db.Model):
         return {
             "id": self.id,
             "name": self.name,
-            "status": self.status.value,
+            "condition": self.condition.value,
             "quantity": self.quantity,
             "reorder_quantity": self.reorder_quantity,
             "restock_level": self.restock_level
@@ -89,7 +90,7 @@ class Inventory(db.Model):
         try:
             self.id = data["id"]
             self.name = data["name"]
-            self.status = self.Status(data["status"])
+            self.condition = data["condition"]
             self.quantity = data["quantity"]
             self.reorder_quantity = data["reorder_quantity"]
             self.restock_level = data["restock_level"]
