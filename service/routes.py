@@ -67,7 +67,16 @@ def create_inventory_records():
     #return jsonify(inventory.serialize()), status.HTTP_201_CREATED
     return jsonify(inventory.serialize()), status.HTTP_201_CREATED, {"Location": location_url}
     
-   
+
+@app.route("/inventory-records", methods=["GET"])
+def list_inventory_records():
+    """Returns all of the Inventory records"""
+    app.logger.info("Request list of inventory records")
+    records = Inventory.all()
+    results = [record.serialize() for record in records]
+    app.logger.info("Returning %d inventory records", len(results))
+    return jsonify(results), status.HTTP_200_OK
+
 ######################################################################
 #  U T I L I T Y   F U N C T I O N S
 ######################################################################
@@ -90,8 +99,3 @@ def check_content_type(content_type):
         status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
         f"Content-Type must be {content_type}",
     )
-
-
-    
-
-    
