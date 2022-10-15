@@ -7,11 +7,17 @@ import logging
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 import enum
+from flask import Flask
+
 
 logger = logging.getLogger("flask.app")
 
 # Create the SQLAlchemy object to be initialized later in init_db()
 db = SQLAlchemy()
+
+def init_db(app):
+    """Initialize the SQLAlchemy app"""
+    Inventory.init_db(app)
 
 
 class DataValidationError(Exception):
@@ -25,17 +31,18 @@ class Inventory(db.Model):
     Class that represents a Inventory
     """
 
-    class Status(enum.Enum):
-        NEW = "new"
-        REFURBISHED = "refurbished"
-        RETURN = "return"
+    class Condition(enum.Enum):
+        NEW = 'new'
+        REFURBISHED = 'refurbished'
+        RETURN = 'return'
 
     app = None
 
     # Table Schema
-    id = db.Column(db.Integer, primary_key=True)
+    
+    product_id = db.Column(db.Integer, primary_key=True, autoincrement=False)
     name = db.Column(db.String(63), nullable=False)
-    status = db.Column(db.Enum(Status), nullable=False, default=Status.NEW.name, primary_key=True)
+    condition = db.Column(db.Enum(Condition), nullable=False, default=Condition.NEW.name, primary_key=True)
     quantity = db.Column(db.Integer, nullable=False, default=0)
     reorder_quantity = db.Column(db.Integer, nullable=False, default=0)
     restock_level = db.Column(db.Integer, nullable=False, default=0)
@@ -44,14 +51,13 @@ class Inventory(db.Model):
     updated_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     def __repr__(self):
-        return "<Inventory %r id=[%s]>" % (self.name, self.id)
+        return "<Inventory %r product_id=[%s] condition=[%s]>" % (self.name, self.product_id, self.condition.value)
 
     def create(self):
         """
         Creates a Inventory to the database
         """
         logger.info("Creating %s", self.name)
-        self.id = None  # id must be none to generate next primary key
         db.session.add(self)
         db.session.commit()
 
@@ -71,9 +77,9 @@ class Inventory(db.Model):
     def serialize(self):
         """ Serializes a Inventory into a dictionary """
         return {
-            "id": self.id,
+            "product_id": self.product_id,
             "name": self.name,
-            "status": self.status.value,
+            "condition": self.condition.value,
             "quantity": self.quantity,
             "reorder_quantity": self.reorder_quantity,
             "restock_level": self.restock_level
@@ -87,9 +93,9 @@ class Inventory(db.Model):
             data (dict): A dictionary containing the resource data
         """
         try:
-            self.id = data["id"]
+            self.product_id=data["product_id"]
             self.name = data["name"]
-            self.status = self.Status(data["status"])
+            self.condition = self.Condition(data["condition"])
             self.quantity = data["quantity"]
             self.reorder_quantity = data["reorder_quantity"]
             self.restock_level = data["restock_level"]
@@ -105,7 +111,7 @@ class Inventory(db.Model):
         return self
 
     @classmethod
-    def init_db(cls, app):
+    def init_db(cls, app: Flask):
         """ Initializes the database session """
         logger.info("Initializing database")
         cls.app = app
@@ -113,6 +119,8 @@ class Inventory(db.Model):
         db.init_app(app)
         app.app_context().push()
         db.create_all()  # make our sqlalchemy tables
+        
+        
 
     @classmethod
     def all(cls):
@@ -121,10 +129,11 @@ class Inventory(db.Model):
         return cls.query.all()
 
     @classmethod
-    def find(cls, by_id):
+    def find(cls, by):
         """ Finds a Inventory by it's ID """
-        logger.info("Processing lookup for id %s ...", by_id)
-        return cls.query.get(by_id)
+        by_id, by_condition=by
+        logger.info("Processing lookup for id %s and condition %s ...", by_id, by_condition)
+        return cls.query.get((by_id, by_condition))
 
     @classmethod
     def find_by_name(cls, name):
