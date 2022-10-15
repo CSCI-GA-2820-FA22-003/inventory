@@ -51,6 +51,15 @@ class TestInventory(TestCase):
         """ This runs after each test """
         db.session.remove()
 
+    def _create_inventory_records(self, count):
+        """Factory method to create inventory records in bulk"""
+        records = []
+        for _ in range(count):
+            test_record = InventoryFactory()
+            response = self.client.post(BASE_URL, json=test_record.serialize())
+            self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+            records.append(test_record)
+        return records
 
     ######################################################################
     #  P L A C E   T E S T   C A S E S   H E R E
@@ -140,4 +149,12 @@ class TestInventory(TestCase):
         #this will test when a string is passed which has invalid request headers
         response = self.client.post(BASE_URL, data="1")
         self.assertEqual(response.status_code, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
-    
+
+    def test_list_inventory_records(self):
+        expected_records = self._create_inventory_records(5)
+        expected_response = [record.serialize() for record in expected_records]
+        response = self.client.get(BASE_URL)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertEqual(len(data), 5)
+        self.assertCountEqual(expected_response, data)
