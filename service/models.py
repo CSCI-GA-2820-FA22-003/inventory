@@ -40,7 +40,7 @@ class Inventory(db.Model):
 
     # Table Schema
     
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=False)
     name = db.Column(db.String(63), nullable=False)
     condition = db.Column(db.Enum(Condition), nullable=False, default=Condition.NEW.name, primary_key=True)
     quantity = db.Column(db.Integer, nullable=False, default=0)
@@ -59,6 +59,7 @@ class Inventory(db.Model):
         """
         logger.info("Creating %s", self.name)
         #self.id = None  # id must be none to generate next primary key
+        
         db.session.add(self)
         db.session.commit()
 
@@ -94,6 +95,7 @@ class Inventory(db.Model):
             data (dict): A dictionary containing the resource data
         """
         try:
+            self.id=data["id"]
             self.name = data["name"]
             self.condition = self.Condition(data["condition"])
             self.quantity = data["quantity"]
@@ -129,10 +131,11 @@ class Inventory(db.Model):
         return cls.query.all()
 
     @classmethod
-    def find(cls, by_id):
+    def find(cls, by):
         """ Finds a Inventory by it's ID """
-        logger.info("Processing lookup for id %s ...", by_id)
-        return cls.query.get(by_id)
+        by_id, by_condition=by
+        logger.info("Processing lookup for id %s and condition %s ...", by_id, by_condition)
+        return cls.query.get((by_id, by_condition))
 
     @classmethod
     def find_by_name(cls, name):

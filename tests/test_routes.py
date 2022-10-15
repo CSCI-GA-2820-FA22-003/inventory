@@ -17,7 +17,7 @@ from tests.factories import InventoryFactory
 DATABASE_URI = os.getenv(
     "DATABASE_URI", "postgresql://postgres:postgres@localhost:5432/testdb"
 )
-BASE_URL = "/inventory-records"
+BASE_URL = "/products"
 ######################################################################
 #  T E S T   C A S E S
 ######################################################################
@@ -61,33 +61,83 @@ class TestInventory(TestCase):
         response = self.client.get("/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_create_records(self):
-        """ Test Create Records """
+    def test_create_products(self):
+        """ Test Create Products """
         test_record = InventoryFactory()
-        logging.debug("Test Inventory Record: %s", test_record.serialize())
-        #raise Exception(test_record.serialize())
+        logging.debug("Test Inventory Product: %s", test_record.serialize())
         response = self.client.post(BASE_URL, json=test_record.serialize())
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-        # # Make sure location header is set
-        # location = response.headers.get("Location", None)
-        # self.assertIsNotNone(location)
+        # Make sure location header is set
+        location = response.headers.get("Location", None)
+        self.assertIsNotNone(location)
 
-        # # Check the data is correct
-        # new_record = response.get_json()
-        # self.assertEqual(new_record["name"], test_record.name)
-        # self.assertEqual(new_record["condition"], test_record.condition.name)
-        # self.assertEqual(new_record["quantity"], test_record.quantity)
-        # self.assertEqual(new_record["reorder_quantity"], test_record.reorder_quantity)
-        # self.assertEqual(new_record["restock_level"], test_record.restock_level)
+        # Check the data is correct
+        new_record = response.get_json()
+        self.assertEqual(new_record["id"], test_record.id)
+        self.assertEqual(new_record["name"], test_record.name)
+        self.assertEqual(new_record["condition"], test_record.condition.value)
+        self.assertEqual(new_record["quantity"], test_record.quantity)
+        self.assertEqual(new_record["reorder_quantity"], test_record.reorder_quantity)
+        self.assertEqual(new_record["restock_level"], test_record.restock_level)
 
-
-        # Check that the location header was correct
+        #uncomment this once list all products works
+        #Check that the location header was correct
         # response = self.client.get(location)
         # self.assertEqual(response.status_code, status.HTTP_200_OK)
         # new_record = response.get_json()
+        #self.assertEqual(new_record["id"], test_record.id)
         # self.assertEqual(new_record["name"], test_record.name)
-        # self.assertEqual(new_record["condition"], test_record.condition.name)
+        # self.assertEqual(new_record["condition"], test_record.condition.value)
         # self.assertEqual(new_record["quantity"], test_record.quantity)
         # self.assertEqual(new_record["reorder_quantity"], test_record.reorder_quantity)
         # self.assertEqual(new_record["restock_level"], test_record.restock_level)
+
+    def test_create_alreadyexists_product(self):
+        """Test if a product already exists"""
+        
+        test_record = InventoryFactory()
+        logging.debug("New Inventory Product: %s", test_record.serialize())
+        
+        response = self.client.post(BASE_URL, json=test_record.serialize())
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+       # Make sure location header is set
+        location = response.headers.get("Location", None)
+        self.assertIsNotNone(location)
+
+        # Check the data is correct
+        new_record = response.get_json()
+        self.assertEqual(new_record["id"], test_record.id)
+        self.assertEqual(new_record["name"], test_record.name)
+        self.assertEqual(new_record["condition"], test_record.condition.value)
+        self.assertEqual(new_record["quantity"], test_record.quantity)
+        self.assertEqual(new_record["reorder_quantity"], test_record.reorder_quantity)
+        self.assertEqual(new_record["restock_level"], test_record.restock_level)
+
+        # Create a new record with the same data values as just inserted into the database, this should return a 409 conflict
+        response = self.client.post(BASE_URL, json=test_record.serialize())
+        self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
+
+    def test_create_product_invalid_content_type(self):
+        """Test if the product is of invalid content type"""
+        
+        input_data = {
+            "id": 1,
+            "name": "monitor",
+            "condition": Inventory.Condition.NEW.value,
+            "quantity": 10,
+            "reorder_quantity": 20,
+            "restock_level": 2
+            }
+        
+        logging.debug("New Inventory Product: %s", input_data)
+        
+        #this will test when a json is passed by cannot be parsed
+        response = self.client.post(BASE_URL, data=input_data)
+        self.assertEqual(response.status_code, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
+
+        #this will test when a string is passed which has invalid request headers
+        response = self.client.post(BASE_URL, data="1")
+        self.assertEqual(response.status_code, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
+    

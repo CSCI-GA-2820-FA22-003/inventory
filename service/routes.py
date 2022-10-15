@@ -36,20 +36,17 @@ def init_db():
     global app
     Inventory.init_db(app)
 
-# @app.route("/records/<id>/<name>/<condition>/<quantity>/<reorder_quantity>/<restock_level>", methods=["POST"])
-# def create(id=None,name=None,condition=Inventory.Condition.NEW,quantity=0, reorder_quantity=0, restock_level=0):
-#     app.logger.info(f"Request to create inventory id: {id} named: {name}")
-#     inventory = Inventory.find(id)
-#     if inventory:
-#         abort(status.HTTP_409_CONFLICT, f"Inventory record with id: {id} named: {name} already exists")
-    
-#     inventory=Inventory(id,name,condition,quantity,reorder_quantity,restock_level,True,datetime.utcnow,datetime.utcnow)
-#     inventory.create()
+@app.route("/products/<product_id>", methods=["GET"])
+def get_products(product_id):
+    """
+    Retrieve a single record
+    This endpoint will return a record based on it's product id and condition
+    """
+    #fetch the condition from the payload of the data
+    return {}, status.HTTP_200_OK
 
-#     return inventory.serialize(),status.HTTP_201_CREATED
-
-@app.route("/inventory-records", methods=["POST"])
-def create_records():
+@app.route("/products", methods=["POST"])
+def create_products():
     """
     Creates inventory record
     This end point will create an inventory record and store it in the database based on user input in the body
@@ -57,17 +54,19 @@ def create_records():
     app.logger.info("Request to create a record")
     check_content_type("application/json")
     inventory = Inventory()
-    
-    #raise Exception(inventory.deserialize(request.get_json()))
-    app.logger.debug("Test Request in routes: %s", inventory.deserialize(request.get_json()))
     inventory.deserialize(request.get_json())
-    
-    inventory.create()
-    # location_url = url_for("get_records", inventory_id=inventory.id, _external=True)
 
-    # app.logger.info(f"Inventory record with ID {inventory.id} and name: {inventory.name} created.")
-    # return jsonify(inventory.serialize()), status.HTTP_201_CREATED, {"Location": location_url}
-    return {},status.HTTP_201_CREATED
+    product=inventory.find((inventory.id,inventory.condition))
+    if product:
+        abort(status.HTTP_409_CONFLICT, f"Product with id '{inventory.id}' and condition '{inventory.condition} 'already exists.")
+
+    inventory.create()
+    location_url = url_for("get_products", product_id=inventory.id, _external=True)
+
+    app.logger.info(f"Inventory product with ID {inventory.id} and condition: {inventory.condition} created.")
+    #return jsonify(inventory.serialize()), status.HTTP_201_CREATED
+    return jsonify(inventory.serialize()), status.HTTP_201_CREATED, {"Location": location_url}
+    
    
 ######################################################################
 #  U T I L I T Y   F U N C T I O N S

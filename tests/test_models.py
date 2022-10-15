@@ -74,6 +74,7 @@ class TestInventory(unittest.TestCase):
 
     def test_inventory_deserialize(self):
         data = {
+            "id": 1,
             "name": "monitor",
             "condition": Inventory.Condition.NEW.value,
             "quantity": 10,
@@ -82,7 +83,7 @@ class TestInventory(unittest.TestCase):
         }
         record = Inventory()
         record.deserialize(data)
-        self.assertEqual(record.id, None)
+        self.assertEqual(record.id, 1)
         self.assertEqual(record.name, "monitor")
         self.assertEqual(record.condition, Inventory.Condition.NEW)
         self.assertEqual(record.quantity, 10)
