@@ -61,10 +61,10 @@ class TestInventory(TestCase):
         response = self.client.get("/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_create_products(self):
+    def test_create_inventory_records(self):
         """ Test Create Products """
         test_record = InventoryFactory()
-        logging.debug("Test Inventory Product: %s", test_record.serialize())
+        logging.debug("Test Inventory Records: %s", test_record.serialize())
         response = self.client.post(BASE_URL, json=test_record.serialize())
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
@@ -93,11 +93,11 @@ class TestInventory(TestCase):
         # self.assertEqual(new_record["reorder_quantity"], test_record.reorder_quantity)
         # self.assertEqual(new_record["restock_level"], test_record.restock_level)
 
-    def test_create_alreadyexists_product(self):
-        """Test if a product already exists"""
+    def test_create_alreadyexists_record(self):
+        """Test if a record already exists"""
         
         test_record = InventoryFactory()
-        logging.debug("New Inventory Product: %s", test_record.serialize())
+        logging.debug("New Inventory Record: %s", test_record.serialize())
         
         response = self.client.post(BASE_URL, json=test_record.serialize())
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -119,8 +119,8 @@ class TestInventory(TestCase):
         response = self.client.post(BASE_URL, json=test_record.serialize())
         self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
 
-    def test_create_product_invalid_content_type(self):
-        """Test if the product is of invalid content type"""
+    def test_create_record_invalid_content_type(self):
+        """Test if the user input is of invalid content type"""
         
         input_data = {
             "id": 1,
@@ -131,7 +131,7 @@ class TestInventory(TestCase):
             "restock_level": 2
             }
         
-        logging.debug("New Inventory Product: %s", input_data)
+        logging.debug("New Inventory Record: %s", input_data)
         
         #this will test when a json is passed by cannot be parsed
         response = self.client.post(BASE_URL, data=input_data)
