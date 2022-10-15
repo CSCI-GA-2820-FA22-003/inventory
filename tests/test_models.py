@@ -51,7 +51,7 @@ class TestInventory(unittest.TestCase):
 
         record = Inventory(product_id=1, name="monitor", condition=Inventory.Condition.NEW, quantity=10, reorder_quantity=20, restock_level=2)
         self.assertTrue(record is not None)
-        self.assertEqual(str(record), "<Inventory %r id=[%d]>" % ("monitor", 1))
+        self.assertEqual(str(record), "<Inventory %r product_id=[%d] condition=[%s]>" % ("monitor", 1, Inventory.Condition.NEW.value))
         self.assertEqual(record.product_id, 1)
         self.assertEqual(record.name, "monitor")
         self.assertEqual(record.condition, Inventory.Condition.NEW)

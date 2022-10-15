@@ -51,7 +51,7 @@ class Inventory(db.Model):
     updated_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     def __repr__(self):
-        return "<Inventory %r id=[%s]>" % (self.name, self.product_id)
+        return "<Inventory %r product_id=[%s] condition=[%s]>" % (self.name, self.product_id, self.condition.value)
 
     def create(self):
         """
