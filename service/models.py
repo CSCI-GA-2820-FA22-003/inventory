@@ -7,12 +7,17 @@ import logging
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 import enum
+from flask import Flask
 
 
 logger = logging.getLogger("flask.app")
 
 # Create the SQLAlchemy object to be initialized later in init_db()
 db = SQLAlchemy()
+
+def init_db(app):
+    """Initialize the SQLAlchemy app"""
+    Inventory.init_db(app)
 
 
 class DataValidationError(Exception):
@@ -27,13 +32,14 @@ class Inventory(db.Model):
     """
 
     class Condition(enum.Enum):
-        NEW = "new"
-        REFURBISHED = "refurbished"
-        RETURN = "return"
+        NEW = 'new'
+        REFURBISHED = 'refurbished'
+        RETURN = 'return'
 
     app = None
 
     # Table Schema
+    
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(63), nullable=False)
     condition = db.Column(db.Enum(Condition), nullable=False, default=Condition.NEW.name, primary_key=True)
@@ -52,7 +58,7 @@ class Inventory(db.Model):
         Creates a Inventory to the database
         """
         logger.info("Creating %s", self.name)
-        self.id = None  # id must be none to generate next primary key
+        #self.id = None  # id must be none to generate next primary key
         db.session.add(self)
         db.session.commit()
 
@@ -88,9 +94,8 @@ class Inventory(db.Model):
             data (dict): A dictionary containing the resource data
         """
         try:
-            self.id = data["id"]
             self.name = data["name"]
-            self.condition = data["condition"]
+            self.condition = self.Condition(data["condition"])
             self.quantity = data["quantity"]
             self.reorder_quantity = data["reorder_quantity"]
             self.restock_level = data["restock_level"]
@@ -106,14 +111,16 @@ class Inventory(db.Model):
         return self
 
     @classmethod
-    def init_db(cls, app):
+    def init_db(cls, app: Flask):
         """ Initializes the database session """
         logger.info("Initializing database")
-        cls.app = app
-        # This is where we initialize SQLAlchemy from the Flask app
+        # cls.app = app
+        # # This is where we initialize SQLAlchemy from the Flask app
         db.init_app(app)
         app.app_context().push()
         db.create_all()  # make our sqlalchemy tables
+        
+        
 
     @classmethod
     def all(cls):

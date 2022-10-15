@@ -45,7 +45,7 @@ class TestInventory(unittest.TestCase):
     #  T E S T   C A S E S
     ######################################################################
 
-    def test_instantiate_inventory_record(self):
+    def test_create_inventory_record(self):
         inventory_records = Inventory.all()
         self.assertEqual(inventory_records, [])
 
@@ -74,7 +74,6 @@ class TestInventory(unittest.TestCase):
 
     def test_inventory_deserialize(self):
         data = {
-            "id": 1,
             "name": "monitor",
             "condition": Inventory.Condition.NEW.value,
             "quantity": 10,
@@ -83,9 +82,9 @@ class TestInventory(unittest.TestCase):
         }
         record = Inventory()
         record.deserialize(data)
-        self.assertEqual(record.id, 1)
+        self.assertEqual(record.id, None)
         self.assertEqual(record.name, "monitor")
-        self.assertEqual(record.condition, Inventory.Condition.NEW.value)
+        self.assertEqual(record.condition, Inventory.Condition.NEW)
         self.assertEqual(record.quantity, 10)
         self.assertEqual(record.reorder_quantity, 20)
         self.assertEqual(record.restock_level, 2)
