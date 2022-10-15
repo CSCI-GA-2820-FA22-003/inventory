@@ -36,8 +36,8 @@ def init_db():
     global app
     Inventory.init_db(app)
 
-@app.route("/products/<product_id>", methods=["GET"])
-def get_products(product_id):
+@app.route("/inventory-records/<product_id>", methods=["GET"])
+def get_inventory_records(product_id):
     """
     Retrieve a single record
     This endpoint will return a record based on it's product id and condition
@@ -45,8 +45,8 @@ def get_products(product_id):
     #fetch the condition from the payload of the data
     return {}, status.HTTP_200_OK
 
-@app.route("/products", methods=["POST"])
-def create_products():
+@app.route("/inventory-records", methods=["POST"])
+def create_inventory_records():
     """
     Creates inventory record
     This end point will create an inventory record and store it in the database based on user input in the body
@@ -61,7 +61,7 @@ def create_products():
         abort(status.HTTP_409_CONFLICT, f"Product with id '{inventory.product_id}' and condition '{inventory.condition} 'already exists.")
 
     inventory.create()
-    location_url = url_for("get_products", product_id=inventory.product_id, _external=True)
+    location_url = url_for("get_inventory_records", product_id=inventory.product_id, _external=True)
 
     app.logger.info(f"Inventory product with ID {inventory.product_id} and condition: {inventory.condition} created.")
     #return jsonify(inventory.serialize()), status.HTTP_201_CREATED
