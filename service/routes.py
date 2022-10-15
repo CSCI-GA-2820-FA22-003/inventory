@@ -56,14 +56,14 @@ def create_products():
     inventory = Inventory()
     inventory.deserialize(request.get_json())
 
-    product=inventory.find((inventory.id,inventory.condition))
+    product=inventory.find((inventory.product_id,inventory.condition))
     if product:
-        abort(status.HTTP_409_CONFLICT, f"Product with id '{inventory.id}' and condition '{inventory.condition} 'already exists.")
+        abort(status.HTTP_409_CONFLICT, f"Product with id '{inventory.product_id}' and condition '{inventory.condition} 'already exists.")
 
     inventory.create()
-    location_url = url_for("get_products", product_id=inventory.id, _external=True)
+    location_url = url_for("get_products", product_id=inventory.product_id, _external=True)
 
-    app.logger.info(f"Inventory product with ID {inventory.id} and condition: {inventory.condition} created.")
+    app.logger.info(f"Inventory product with ID {inventory.product_id} and condition: {inventory.condition} created.")
     #return jsonify(inventory.serialize()), status.HTTP_201_CREATED
     return jsonify(inventory.serialize()), status.HTTP_201_CREATED, {"Location": location_url}
     

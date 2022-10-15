@@ -74,7 +74,7 @@ class TestInventory(TestCase):
 
         # Check the data is correct
         new_record = response.get_json()
-        self.assertEqual(new_record["id"], test_record.id)
+        self.assertEqual(new_record["product_id"], test_record.product_id)
         self.assertEqual(new_record["name"], test_record.name)
         self.assertEqual(new_record["condition"], test_record.condition.value)
         self.assertEqual(new_record["quantity"], test_record.quantity)
@@ -108,7 +108,7 @@ class TestInventory(TestCase):
 
         # Check the data is correct
         new_record = response.get_json()
-        self.assertEqual(new_record["id"], test_record.id)
+        self.assertEqual(new_record["product_id"], test_record.product_id)
         self.assertEqual(new_record["name"], test_record.name)
         self.assertEqual(new_record["condition"], test_record.condition.value)
         self.assertEqual(new_record["quantity"], test_record.quantity)

@@ -40,7 +40,7 @@ class Inventory(db.Model):
 
     # Table Schema
     
-    id = db.Column(db.Integer, primary_key=True, autoincrement=False)
+    product_id = db.Column(db.Integer, primary_key=True, autoincrement=False)
     name = db.Column(db.String(63), nullable=False)
     condition = db.Column(db.Enum(Condition), nullable=False, default=Condition.NEW.name, primary_key=True)
     quantity = db.Column(db.Integer, nullable=False, default=0)
@@ -51,15 +51,13 @@ class Inventory(db.Model):
     updated_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     def __repr__(self):
-        return "<Inventory %r id=[%s]>" % (self.name, self.id)
+        return "<Inventory %r id=[%s]>" % (self.name, self.product_id)
 
     def create(self):
         """
         Creates a Inventory to the database
         """
         logger.info("Creating %s", self.name)
-        #self.id = None  # id must be none to generate next primary key
-        
         db.session.add(self)
         db.session.commit()
 
@@ -79,7 +77,7 @@ class Inventory(db.Model):
     def serialize(self):
         """ Serializes a Inventory into a dictionary """
         return {
-            "id": self.id,
+            "product_id": self.product_id,
             "name": self.name,
             "condition": self.condition.value,
             "quantity": self.quantity,
@@ -95,7 +93,7 @@ class Inventory(db.Model):
             data (dict): A dictionary containing the resource data
         """
         try:
-            self.id=data["id"]
+            self.product_id=data["product_id"]
             self.name = data["name"]
             self.condition = self.Condition(data["condition"])
             self.quantity = data["quantity"]
