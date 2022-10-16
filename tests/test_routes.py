@@ -90,6 +90,18 @@ class TestInventory(TestCase):
         self.assertEqual(new_record["reorder_quantity"], test_record.reorder_quantity)
         self.assertEqual(new_record["restock_level"], test_record.restock_level)
 
+        #uncomment this once list all products works
+        #Check that the location header was correct
+        # response = self.client.get(location)
+        # self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # new_record = response.get_json()
+        #self.assertEqual(new_record["id"], test_record.id)
+        # self.assertEqual(new_record["name"], test_record.name)
+        # self.assertEqual(new_record["condition"], test_record.condition.value)
+        # self.assertEqual(new_record["quantity"], test_record.quantity)
+        # self.assertEqual(new_record["reorder_quantity"], test_record.reorder_quantity)
+        # self.assertEqual(new_record["restock_level"], test_record.restock_level)
+
     def test_create_alreadyexists_record(self):
         """Test if a record already exists"""
         
