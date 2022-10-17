@@ -86,10 +86,49 @@ def list_inventory_records():
     app.logger.info("Returning %d inventory records", len(results))
     return jsonify(results), status.HTTP_200_OK
 
+@app.route("/inventory-records/<int:product_id>/<string:condition>", methods = ["PUT"])
+def update_inventory_records(product_id, condition):
+    """Updates an existing inventory record given that it is present in the database table"""
+    app.logger.info("Update an inventory record")
+
+    # Retrieve item from table
+    inventory = Inventory()
+    inventory.deserialize(request.get_json())
+    record = inventory.find((inventory.product_id, inventory.condition))
+
+    # Abort operation of not found
+    if not record: 
+         abort(status.HTTP_404_NOT_FOUND, f"Product with id '{product_id}' & condition '{condition}' was not found.")
+    
+    # Update as keys with updated information
+    flag = False
+    data = request.get_json()
+    quantities = [10, 15, 20]
+    restock_levels = [1, 2, 3]
+    if data.get('quantity'):
+        if not isinstance(data['quantity'], int) or data['quantity'] not in quantities:
+            return jsonify({"Result": "Invalid request"}), status.HTTP_400_BAD_REQUEST
+        else:
+            record.quantity = data['quantity']
+    if data.get('reorder_quantity'):
+        if not isinstance(data['reorder_quantity'], int) or data['reorder_quantity'] not in quantities:
+            return jsonify({"Result": "Invalid request"}), status.HTTP_400_BAD_REQUEST
+        else:
+            record.reorder_quantity = data['reorder_quantity']
+    if data.get('restock_level'):
+        if not isinstance(data['restock_level'], int) or data['restock_level'] not in restock_levels:
+            return jsonify({"Result": "Invalid request"}), status.HTTP_400_BAD_REQUEST
+        else:
+            record.restock_level = data['restock_level']
+    record.updated_at = datetime.utcnow()
+    
+    # Apply update to database & return as JSON
+    inventory.update()
+    return jsonify(record.serialize()), status.HTTP_200_OK
+
 ######################################################################
 #  U T I L I T Y   F U N C T I O N S
 ######################################################################
-
 
 def check_content_type(content_type):
     """Checks that the media type is correct"""
