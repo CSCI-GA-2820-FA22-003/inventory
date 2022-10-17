@@ -43,7 +43,16 @@ def get_inventory_records(product_id):
     This endpoint will return a record based on it's product id and condition
     """
     #fetch the condition from the payload of the data
-    return {}, status.HTTP_200_OK
+    app.logger.info("Reading the given record")
+    check_content_type("application/json")
+    inventory = Inventory()
+    inventory.deserialize(request.get_json())
+    product = inventory.find((inventory.product_id,inventory.condition))
+
+    if not product : 
+         abort(status.HTTP_404_NOT_FOUND, f"Product with id '{product_id}' was not found.")
+    app.logger.info("Returning product: %s", product.name)
+    return jsonify(product.serialize()),status.HTTP_200_OK
 
 @app.route("/inventory-records", methods=["POST"])
 def create_inventory_records():

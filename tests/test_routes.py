@@ -158,3 +158,27 @@ class TestInventory(TestCase):
         data = response.get_json()
         self.assertEqual(len(data), 5)
         self.assertCountEqual(expected_response, data)
+
+    def test_read_records(self):
+        record = self._create_inventory_records(1)[0]
+        record.name = None
+        record.quantity  = None
+        record.reorder_quantity = None
+        record.restock_level = None
+        logging.debug("Test Read Records: %s", record.serialize())
+        response = self.client.get(f"{BASE_URL}/{record.product_id}", json= record.serialize())
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertEqual(data["product_id"], record.product_id)
+        self.assertEqual(data["condition"], record.condition.value)
+
+    def test_read_non_existent_records(self):
+        record = self._create_inventory_records(1)[0]
+        record.product_id = record.product_id + 1
+        record.name = None
+        record.quantity  = None
+        record.reorder_quantity = None
+        record.restock_level = None
+        logging.debug("Test Read Records: %s", record.serialize())
+        response = self.client.get(f"{BASE_URL}/{record.product_id}", json= record.serialize())
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
