@@ -239,6 +239,35 @@ class TestInventory(TestCase):
         updated_record = response.get_json()
         self.assertEqual(updated_record[field1], data[field1])
         self.assertEqual(updated_record[field2], data[field2])
+
+    # Test to attempt update with invalid values
+    def test_attempt_incorrect_value_update(self):
+        """Test to check if a record gets updated with an invalid value for a particular field"""
+        test_record = InventoryFactory()
+        response = self.client.post(BASE_URL, json=test_record.serialize())
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        logging.debug('Created record, %s', Inventory().deserialize(response.get_json()))
+
+        # Get record as JSON
+        data = response.get_json()
+        logging.debug(data)
+        data['quantity'] = '100'
+        response = self.client.put("{}/{}/{}".format(BASE_URL, data['product_id'], data['condition']), json=data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.get_json(), {"Result": "Invalid request"})
+        data['quantity'] = 20
+        data['reorder_quantity'] = '200'
+        response = self.client.put("{}/{}/{}".format(BASE_URL, data['product_id'], data['condition']), json=data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.get_json(), {"Result": "Invalid request"})
+        data['reorder_quantity'] = 10
+        data['restock_level'] = '3'
+        response = self.client.put("{}/{}/{}".format(BASE_URL, data['product_id'], data['condition']), json=data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.get_json(), {"Result": "Invalid request"})
+
+        
+
            
     def test_read_records(self):
         record = self._create_inventory_records(1)[0]

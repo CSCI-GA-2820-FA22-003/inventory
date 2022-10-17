@@ -135,12 +135,13 @@ class Inventory(db.Model):
         logger.info("Processing lookup for id %s and condition %s ...", by_id, by_condition)
         return cls.query.get((by_id, by_condition))
 
-    @classmethod
-    def find_by_name(cls, name):
-        """Returns all Inventories with the given name
+    #uncomment for sprint 2
+    # @classmethod
+    # def find_by_name(cls, name):
+    #     """Returns all Inventories with the given name
 
-        Args:
-            name (string): the name of the Inventories you want to match
-        """
-        logger.info("Processing name query for %s ...", name)
-        return cls.query.filter(cls.name == name)
+    #     Args:
+    #         name (string): the name of the Inventories you want to match
+    #     """
+    #     logger.info("Processing name query for %s ...", name)
+    #     return cls.query.filter(cls.name == name)
