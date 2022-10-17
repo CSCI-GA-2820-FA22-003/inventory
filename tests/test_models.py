@@ -7,6 +7,7 @@ import logging
 import unittest
 from service import app
 from service.models import Inventory, DataValidationError, db
+from tests.factories import InventoryFactory
 
 DATABASE_URI = os.getenv(
     "DATABASE_URI", "postgresql://postgres:postgres@localhost:5432/testdb"
@@ -94,3 +95,15 @@ class TestInventory(unittest.TestCase):
         data = {}
         record = Inventory()
         self.assertRaises(DataValidationError, record.deserialize, data)
+
+
+    def test_read_a_record(self):
+        """It should Read a Record"""
+        record = InventoryFactory()
+        logging.debug(record)
+        record.create()
+        self.assertIsNotNone(record.product_id)
+        # Fetch it back
+        found_record = record.find((record.product_id,record.condition))
+        self.assertEqual(found_record.product_id, record.product_id)
+        self.assertEqual(found_record.condition, record.condition)
