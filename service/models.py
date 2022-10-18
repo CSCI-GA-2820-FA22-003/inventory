@@ -79,7 +79,7 @@ class Inventory(db.Model):
         return {
             "product_id": self.product_id,
             "name": self.name,
-            "condition": self.condition.value,
+            "condition": self.condition and self.condition.value,
             "quantity": self.quantity,
             "reorder_quantity": self.reorder_quantity,
             "restock_level": self.restock_level
@@ -94,11 +94,20 @@ class Inventory(db.Model):
         """
         try:
             self.product_id=data["product_id"]
-            self.name = data["name"]
             self.condition = self.Condition(data["condition"])
-            self.quantity = data["quantity"]
-            self.reorder_quantity = data["reorder_quantity"]
-            self.restock_level = data["restock_level"]
+
+            if "name" in data and data["name"] is not None:
+                self.name = data["name"]
+
+            if "quantity" in data and data["quantity"] is not None:
+                self.quantity = data["quantity"]
+
+            if "reorder_quantity" in data and data["reorder_quantity"] is not None:
+                self.reorder_quantity = data["reorder_quantity"]
+
+            if "restock_level" in data and data["restock_level"] is not None:
+                self.restock_level = data["restock_level"]
+
         except KeyError as error:
             raise DataValidationError(
                 "Invalid Inventory: missing " + error.args[0]
