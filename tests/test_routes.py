@@ -202,6 +202,7 @@ class TestInventory(TestCase):
     
     # Test to update existing inventory records with random valid values
     def test_update_inventory_records(self):
+        """Test for successful update of randomly selected fields of an inventory record"""
         # Create a test record
         test_record = InventoryFactory()
         response = self.client.post(BASE_URL, json=test_record.serialize())
@@ -215,7 +216,7 @@ class TestInventory(TestCase):
         quantities = [10, 15, 20]
         restock_levels = [1, 2, 3]
 
-        """ Randomly select any 2 fields and update them """
+        # Randomly select any 2 fields and update them
         # Select 1st field
         field1 = random.choice(fields)
         logging.debug('Field selected for update: %s', field1)
@@ -262,7 +263,7 @@ class TestInventory(TestCase):
             logging.debug('New value = %r', data[field2])
 
         # Make call to update record
-        response = self.client.put("{}/{}/{}".format(BASE_URL, data['product_id'], data['condition']), json=data)
+        response = self.client.put(f"{BASE_URL}/{data['product_id']}", json=data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         updated_record = response.get_json()
         self.assertEqual(updated_record[field1], data[field1])
@@ -280,22 +281,42 @@ class TestInventory(TestCase):
         data = response.get_json()
         logging.debug(data)
         data['quantity'] = '100'
-        response = self.client.put("{}/{}/{}".format(BASE_URL, data['product_id'], data['condition']), json=data)
+        field = 'quantity'
+        response = self.client.put(f"{BASE_URL}/{data['product_id']}", json=data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.get_json(), {"Result": "Invalid request"})
+        self.assertEqual(response.get_json(), {"Result": f"Invalid data type for field \'{field}\'"})
         data['quantity'] = 20
-        data['reorder_quantity'] = '200'
-        response = self.client.put("{}/{}/{}".format(BASE_URL, data['product_id'], data['condition']), json=data)
+        data['reorder_quantity'] = -20
+        field = 'reorder_quantity'
+        response = self.client.put(f"{BASE_URL}/{data['product_id']}/", json=data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.get_json(), {"Result": "Invalid request"})
+        self.assertEqual(response.get_json(), {"Result": f"Value supplied cannot be negative for \'{field}\'"})
         data['reorder_quantity'] = 10
-        data['restock_level'] = '3'
-        response = self.client.put("{}/{}/{}".format(BASE_URL, data['product_id'], data['condition']), json=data)
+        data['restock_level'] = 'abc'
+        field = 'restock_level'
+        response = self.client.put(f"{BASE_URL}/{data['product_id']}", json = data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.get_json(), {"Result": "Invalid request"})
+        self.assertEqual(response.get_json(), {"Result": f"Invalid data type for field \'{field}\'"})
+        data['restock_level'] = 5
+        data['name'] = 250
+        field = 'name'
+        response = self.client.put(f"{BASE_URL}/{data['product_id']}", json = data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.get_json(), {"Result": f"Invalid data type for field \'{field}\'"})
 
-        
+    # Test update for non-existent records
+    def update_non_existent_record(self):
+        """Update a record that does not exist in the database"""
+        test_record = InventoryFactory()
+        response = self.client.post(BASE_URL, json=test_record.serialize())
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        logging.debug('Created record, %s', Inventory().deserialize(response.get_json()))
 
+        # Get record as JSON
+        data = response.get_json()
+        data['product_id'] = None
+        response = self.client.put(f"{BASE_URL}/{data['product_id']}/", json=data)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
            
     def test_read_records(self):
         record = self._create_inventory_records(1)[0]

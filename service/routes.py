@@ -108,42 +108,50 @@ def delete_inventory_record(product_id):
     return "", status.HTTP_204_NO_CONTENT
 
 
-@app.route("/inventory-records/<int:product_id>/<string:condition>", methods = ["PUT"])
-def update_inventory_records(product_id, condition):
+@app.route("/inventory-records/<int:product_id>/", methods=["PUT"])
+@app.route("/inventory-records/<int:product_id>", methods=["PUT"])
+def update_inventory_records(product_id):
     """Updates an existing inventory record given that it is present in the database table"""
     app.logger.info("Update an inventory record")
-
     # Retrieve item from table
     inventory = Inventory()
     inventory.deserialize(request.get_json())
     record = inventory.find((inventory.product_id, inventory.condition))
 
-    # Abort operation of not found
-    if not record: 
-         abort(status.HTTP_404_NOT_FOUND, f"Product with id '{product_id}' & condition '{condition}' was not found.")
-    
     # Update as keys with updated information
-    flag = False
     data = request.get_json()
-    quantities = [10, 15, 20]
-    restock_levels = [1, 2, 3]
+
+    # Error codes
+    field = None
+    codes = {
+        1: "Invalid data type for field ",
+        2: "Value supplied cannot be negative for "
+    }
+    # Check for each of the three fields
     if data.get('quantity'):
-        if not isinstance(data['quantity'], int) or data['quantity'] not in quantities:
-            return jsonify({"Result": "Invalid request"}), status.HTTP_400_BAD_REQUEST
-        else:
-            record.quantity = data['quantity']
+        code = validate_value('quantity', data['quantity'])
+        if code != 0:
+            field = 'quantity'
+            return jsonify({"Result": codes[code] + f"\'{field}\'"}), status.HTTP_400_BAD_REQUEST
+        record.quantity = data['quantity']
     if data.get('reorder_quantity'):
-        if not isinstance(data['reorder_quantity'], int) or data['reorder_quantity'] not in quantities:
-            return jsonify({"Result": "Invalid request"}), status.HTTP_400_BAD_REQUEST
-        else:
-            record.reorder_quantity = data['reorder_quantity']
+        code = validate_value('reorder_quantity', data['reorder_quantity'])
+        if code != 0:
+            field = 'reorder_quantity'
+            return jsonify({"Result": codes[code] + f"\'{field}\'"}), status.HTTP_400_BAD_REQUEST
+        record.reorder_quantity = data['reorder_quantity']
     if data.get('restock_level'):
-        if not isinstance(data['restock_level'], int) or data['restock_level'] not in restock_levels:
-            return jsonify({"Result": "Invalid request"}), status.HTTP_400_BAD_REQUEST
-        else:
-            record.restock_level = data['restock_level']
+        code = validate_value('restock_level', data['restock_level'])
+        if code != 0:
+            field = 'restock_level'
+            return jsonify({"Result": codes[code] + f"\'{field}\'"}), status.HTTP_400_BAD_REQUEST
+        record.restock_level = data['restock_level']
+    if data.get('name'):
+        code = validate_value('name', data['name'])
+        if code != 0:
+            field = 'name'
+            return jsonify({"Result": codes[code] + f"\'{field}\'"}), status.HTTP_400_BAD_REQUEST
     record.updated_at = datetime.utcnow()
-    
     # Apply update to database & return as JSON
     inventory.update()
     return jsonify(record.serialize()), status.HTTP_200_OK
@@ -151,6 +159,7 @@ def update_inventory_records(product_id, condition):
 ######################################################################
 #  U T I L I T Y   F U N C T I O N S
 ######################################################################
+
 
 def check_content_type(content_type):
     """Checks that the media type is correct"""
@@ -169,3 +178,17 @@ def check_content_type(content_type):
         status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
         f"Content-Type must be {content_type}",
     )
+
+
+# Helper function for update evaluation
+def validate_value(field, value):
+    """Helper function to reduce complexity of update functions"""
+    if field == 'quantity' or field == 'reorder_quantity' or field == 'restock_level':
+        if not isinstance(value, int):
+            return 1
+        if value < 0:
+            return 2
+    elif field == 'name':
+        if not isinstance(value, str):
+            return 1
+    return 0
