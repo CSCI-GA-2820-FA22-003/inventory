@@ -91,8 +91,30 @@ class TestInventory(unittest.TestCase):
         self.assertEqual(record.reorder_quantity, 20)
         self.assertEqual(record.restock_level, 2)
 
-    def test_invalid_inventory_deserialize(self):
+    def test_inventory_deserialize_partial_fields(self):
+        data = {
+            "product_id": 1,
+            "condition": Inventory.Condition.RETURN.value
+        }
+        record = Inventory()
+        record.deserialize(data)
+        self.assertEqual(record.product_id, 1)
+        self.assertEqual(record.condition, Inventory.Condition.RETURN)
+        self.assertEqual(record.name, None)
+        self.assertEqual(record.quantity, None)
+        self.assertEqual(record.reorder_quantity, None)
+        self.assertEqual(record.restock_level, None)
+
+
+    def test_deserialize_missing_data(self):
+        """It should not deserialize inventory with missing data"""
         data = {}
+        record = Inventory()
+        self.assertRaises(DataValidationError, record.deserialize, data)
+
+    def test_deserialize_type_bad_data(self):
+        """It should not deserialize inventory with bad data"""
+        data = "this is not a dictionary"
         record = Inventory()
         self.assertRaises(DataValidationError, record.deserialize, data)
 
