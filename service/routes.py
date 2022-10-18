@@ -4,6 +4,7 @@ My Service
 Describe what your service does here
 """
 
+from logging import raiseExceptions
 from flask import Flask, jsonify, request, url_for, make_response, abort
 from .common import status  # HTTP Status Codes
 from service.models import Inventory
@@ -85,6 +86,27 @@ def list_inventory_records():
     results = [record.serialize() for record in records]
     app.logger.info("Returning %d inventory records", len(results))
     return jsonify(results), status.HTTP_200_OK
+
+@app.route("/inventory-records/<product_id>", methods=["DELETE"])
+def delete_inventory_record(product_id):
+    """Deletes inventory record
+
+    @param: product_id is the id of the record that is to be deleted
+    """
+    app.logger.info("Request to delete inventory record with id: %s", product_id)
+    inventory = Inventory()
+    inventory.deserialize(request.get_json())
+    inventory_record = inventory.find((inventory.product_id, inventory.condition))
+    app.logger.info(f"For the provided id, Inventory Record returned is: {inventory_record}")
+
+    if inventory_record:
+        inventory_record.delete()
+    else:
+        abort(status.HTTP_404_NOT_FOUND, f"Product with id '{product_id}' was not found.")
+    
+    app.logger.info(f"Inventory record with ID {product_id} delete complete.")
+    return "", status.HTTP_204_NO_CONTENT
+
 
 @app.route("/inventory-records/<int:product_id>/<string:condition>", methods = ["PUT"])
 def update_inventory_records(product_id, condition):
