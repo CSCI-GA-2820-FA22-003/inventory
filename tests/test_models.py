@@ -106,8 +106,15 @@ class TestInventory(unittest.TestCase):
         self.assertEqual(record.restock_level, None)
 
 
-    def test_invalid_inventory_deserialize(self):
+    def test_deserialize_missing_data(self):
+        """It should not deserialize inventory with missing data"""
         data = {}
+        record = Inventory()
+        self.assertRaises(DataValidationError, record.deserialize, data)
+
+    def test_deserialize_type_bad_data(self):
+        """It should not deserialize inventory with bad data"""
+        data = "this is not a dictionary"
         record = Inventory()
         self.assertRaises(DataValidationError, record.deserialize, data)
 
