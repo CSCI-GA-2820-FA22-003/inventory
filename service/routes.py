@@ -21,8 +21,13 @@ from . import app
 @app.route("/")
 def index():
     """ Root URL response """
+    app.logger.info("Request for Root URL")
     return (
-        "Reminder: return some useful information in json format about the service here",
+        jsonify(
+            name="Inventory Demo REST API Service",
+            version="1.0",
+            paths=url_for("list_inventory_records", _external=True),
+        ),
         status.HTTP_200_OK,
     )
 
@@ -55,6 +60,7 @@ def get_inventory_records(product_id):
     app.logger.info("Returning product: %s", product.name)
     return jsonify(product.serialize()),status.HTTP_200_OK
 
+@app.route("/inventory-records/", methods=["POST"])
 @app.route("/inventory-records", methods=["POST"])
 def create_inventory_records():
     """
@@ -64,12 +70,8 @@ def create_inventory_records():
     app.logger.info("Request to create a record")
     check_content_type("application/json")
     inventory = Inventory()
-    data = request.get_json()
+    inventory.deserialize(request.get_json())
 
-    if "condition" not in data or data["condition"] is None:
-        data["condition"] = "new"
-
-    inventory.deserialize(data)
     product=inventory.find((inventory.product_id,inventory.condition))
     if product:
         abort(status.HTTP_409_CONFLICT, f"Product with id '{inventory.product_id}' and condition '{inventory.condition} 'already exists.")
@@ -81,7 +83,7 @@ def create_inventory_records():
     #return jsonify(inventory.serialize()), status.HTTP_201_CREATED
     return jsonify(inventory.serialize()), status.HTTP_201_CREATED, {"Location": location_url}
     
-
+@app.route("/inventory-records/", methods=["GET"])
 @app.route("/inventory-records", methods=["GET"])
 def list_inventory_records():
     """Returns all of the Inventory records"""
