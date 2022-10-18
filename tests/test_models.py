@@ -116,3 +116,26 @@ class TestInventory(unittest.TestCase):
         # delete the inventory_record and make sure it isn't in the database
         inventory_record.delete()
         self.assertEqual(len(Inventory.all()), 0)
+
+    def test_update_a_record(self):
+        """It should Update a Record"""
+        record = InventoryFactory()
+        logging.debug(record)
+        record.create()
+        self.assertIsNotNone(record.product_id)
+        # Change it an save it
+        record.reorder_quantity = 15
+        record.quantity = 10
+        record.restock_level = 2
+        original_id = record.product_id
+        record.update()
+        self.assertEqual(record.product_id, original_id)
+        self.assertEqual(record.reorder_quantity, 15)
+        self.assertEqual(record.quantity, 10)
+        self.assertEqual(record.restock_level, 2)
+        records = Inventory.all()
+        self.assertEqual(len(records), 1)
+        self.assertEqual(records[0].product_id, original_id)
+        self.assertEqual(records[0].reorder_quantity, 15)
+        self.assertEqual(records[0].quantity, 10)
+        self.assertEqual(records[0].restock_level, 2)
