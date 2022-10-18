@@ -70,8 +70,12 @@ def create_inventory_records():
     app.logger.info("Request to create a record")
     check_content_type("application/json")
     inventory = Inventory()
-    inventory.deserialize(request.get_json())
+    data = request.get_json()
 
+    if "condition" not in data or data["condition"] is None:
+        data["condition"] = "new"
+
+    inventory.deserialize(data)
     product=inventory.find((inventory.product_id,inventory.condition))
     if product:
         abort(status.HTTP_409_CONFLICT, f"Product with id '{inventory.product_id}' and condition '{inventory.condition} 'already exists.")

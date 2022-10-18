@@ -92,6 +92,31 @@ class TestInventory(TestCase):
         self.assertEqual(new_record["reorder_quantity"], test_record.reorder_quantity)
         self.assertEqual(new_record["restock_level"], test_record.restock_level)
 
+    def test_create_inventory_records_with_defaults(self):
+        """ Test Create Products """
+        test_record = InventoryFactory()
+        request_body = {
+            "product_id": test_record.product_id,
+            "name": test_record.name
+        }
+
+        logging.debug("Test Inventory Records: %s", request_body)
+        response = self.client.post(BASE_URL, json=request_body)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # Make sure location header is set
+        location = response.headers.get("Location", None)
+        self.assertIsNotNone(location)
+
+        # Check the data is correct
+        new_record = response.get_json()
+        self.assertEqual(new_record["product_id"], test_record.product_id)
+        self.assertEqual(new_record["name"], test_record.name)
+        self.assertEqual(new_record["condition"], Inventory.Condition.NEW.value)
+        self.assertEqual(new_record["quantity"], 0)
+        self.assertEqual(new_record["reorder_quantity"], 0)
+        self.assertEqual(new_record["restock_level"], 0)
+
         #uncomment this once list all products works
         #Check that the location header was correct
         # response = self.client.get(location)
@@ -160,12 +185,17 @@ class TestInventory(TestCase):
         # check if record was created successfully
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        response = self.client.delete(f"{BASE_URL}/{test_inventory_record.product_id}", json=test_inventory_record.serialize())
+        request_body = {
+            "product_id": test_inventory_record.product_id,
+            "condition": test_inventory_record.condition.value
+        }
+
+        response = self.client.delete(f"{BASE_URL}/{test_inventory_record.product_id}", json=request_body)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(len(response.data), 0)
         
         # make sure they are deleted
-        response = self.client.get(f"{BASE_URL}/{test_inventory_record.product_id}", json=test_inventory_record.serialize())
+        response = self.client.get(f"{BASE_URL}/{test_inventory_record.product_id}", json=request_body)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
     
     def test_delete_inventory_record_exception(self):
@@ -177,7 +207,6 @@ class TestInventory(TestCase):
         response = self.client.delete(f"{BASE_URL}/{SAMPLE_PRODUCT_ID}", json=test_inventory_record.serialize())
         # specified product shouldnt exist already
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-
 
     def test_list_inventory_records(self):
         expected_records = self._create_inventory_records(5)

@@ -91,6 +91,21 @@ class TestInventory(unittest.TestCase):
         self.assertEqual(record.reorder_quantity, 20)
         self.assertEqual(record.restock_level, 2)
 
+    def test_inventory_deserialize_partial_fields(self):
+        data = {
+            "product_id": 1,
+            "condition": Inventory.Condition.RETURN.value
+        }
+        record = Inventory()
+        record.deserialize(data)
+        self.assertEqual(record.product_id, 1)
+        self.assertEqual(record.condition, Inventory.Condition.RETURN)
+        self.assertEqual(record.name, None)
+        self.assertEqual(record.quantity, None)
+        self.assertEqual(record.reorder_quantity, None)
+        self.assertEqual(record.restock_level, None)
+
+
     def test_invalid_inventory_deserialize(self):
         data = {}
         record = Inventory()
