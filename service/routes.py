@@ -97,13 +97,14 @@ def delete_inventory_record(product_id):
     inventory = Inventory()
     inventory.deserialize(request.get_json())
     inventory_record = inventory.find((inventory.product_id, inventory.condition))
-    app.logger.info("inventory_recordinventory_record", inventory_record)
+    app.logger.info(f"For the provided id, Inventory Record returned is: {inventory_record}")
+
     if inventory_record:
         inventory_record.delete()
     else:
         abort(status.HTTP_404_NOT_FOUND, f"Product with id '{product_id}' was not found.")
     
-    app.logger.info("Inventory record with ID [%s] delete complete.", product_id)
+    app.logger.info(f"Inventory record with ID {product_id} delete complete.")
     return "", status.HTTP_204_NO_CONTENT
 
 
