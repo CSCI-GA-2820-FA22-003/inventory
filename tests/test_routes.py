@@ -5,6 +5,7 @@ Test cases can be run with the following:
   nosetests -v --with-spec --spec-color
   coverage report -m
 """
+from cgi import test
 import os
 import logging
 from unittest import TestCase
@@ -149,6 +150,33 @@ class TestInventory(TestCase):
         #this will test when a string is passed which has invalid request headers
         response = self.client.post(BASE_URL, data="1")
         self.assertEqual(response.status_code, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
+
+    def test_delete_inventory_record_success(self):
+        """Test to check if it deletes an inventory record"""
+        test_inventory_record = self._create_inventory_records(1)[0]
+
+        response = self.client.get(f"{BASE_URL}/{test_inventory_record.product_id}", json=test_inventory_record.serialize())
+        # check if record was created successfully
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        response = self.client.delete(f"{BASE_URL}/{test_inventory_record.product_id}", json=test_inventory_record.serialize())
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(len(response.data), 0)
+        
+        # make sure they are deleted
+        response = self.client.get(f"{BASE_URL}/{test_inventory_record.product_id}", json=test_inventory_record.serialize())
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+    
+    def test_delete_inventory_record_exception(self):
+        """Test to check if code handles non-existent record"""
+        SAMPLE_PRODUCT_ID = -999
+        test_inventory_record = InventoryFactory()
+        test_inventory_record.product_id = SAMPLE_PRODUCT_ID
+
+        response = self.client.delete(f"{BASE_URL}/{SAMPLE_PRODUCT_ID}", json=test_inventory_record.serialize())
+        # specified product shouldnt exist already
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
 
     def test_list_inventory_records(self):
         expected_records = self._create_inventory_records(5)

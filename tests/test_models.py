@@ -107,3 +107,12 @@ class TestInventory(unittest.TestCase):
         found_record = record.find((record.product_id,record.condition))
         self.assertEqual(found_record.product_id, record.product_id)
         self.assertEqual(found_record.condition, record.condition)
+    
+    def test_delete_a_record(self):
+        """Test to check if record is deleted"""
+        inventory_record = InventoryFactory()
+        inventory_record.create()
+        self.assertEqual(len(Inventory.all()), 1)
+        # delete the inventory_record and make sure it isn't in the database
+        inventory_record.delete()
+        self.assertEqual(len(Inventory.all()), 0)
