@@ -79,7 +79,7 @@ class Inventory(db.Model):
         return {
             "product_id": self.product_id,
             "name": self.name,
-            "condition": self.condition and self.condition.value,
+            "condition": self.condition.value,
             "quantity": self.quantity,
             "reorder_quantity": self.reorder_quantity,
             "restock_level": self.restock_level
