@@ -110,13 +110,12 @@ class Inventory(db.Model):
 
         except KeyError as error:
             raise DataValidationError(
-                "Invalid Inventory: missing " + error.args[0]
-            )
+                f"Invalid Inventory: missing {error.args[0]}"
+            ) from error
         except TypeError as error:
             raise DataValidationError(
-                "Invalid Inventory: body of request contained bad or no data - "
-                "Error message: " + error
-            )
+                f"Invalid Inventory: body of request contained bad or no data - Error message: {error}"
+            ) from error
         return self
 
     @classmethod
