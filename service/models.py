@@ -26,6 +26,12 @@ class DataValidationError(Exception):
     pass
 
 
+class OutOfRangeError(Exception):
+    """ Used for an data validation errors when deserializing """
+
+    pass
+
+
 class Inventory(db.Model):
     """
     Class that represents a Inventory
@@ -96,17 +102,20 @@ class Inventory(db.Model):
             self.product_id=data["product_id"]
             self.condition = self.Condition(data["condition"])
 
-            if "name" in data and data["name"] is not None:
-                self.name = data["name"]
+            if data.get("name"):
+                if isinstance(data.get("name"), str):
+                    self.name = data.get("name")
+                else:
+                    raise TypeError
 
-            if "quantity" in data and data["quantity"] is not None:
-                self.quantity = data["quantity"]
-
-            if "reorder_quantity" in data and data["reorder_quantity"] is not None:
-                self.reorder_quantity = data["reorder_quantity"]
-
-            if "restock_level" in data and data["restock_level"] is not None:
-                self.restock_level = data["restock_level"]
+            for field in ["quantity", "reorder_quantity", "restock_level"]:
+                if data.get(field):
+                    if not isinstance(data.get(field), int):
+                        raise TypeError
+                    elif data.get(field) < 0:
+                        raise ValueError
+                    else:
+                        setattr(self, field, data.get(field))
 
         except KeyError as error:
             raise DataValidationError(
@@ -115,6 +124,10 @@ class Inventory(db.Model):
         except TypeError as error:
             raise DataValidationError(
                 f"Invalid Inventory: body of request contained bad or no data - Error message: {error}"
+            ) from error
+        except ValueError as error:
+            raise OutOfRangeError(
+                f"Invalid Inventory: body of request contained values out of range - Error message: {error}"
             ) from error
         return self
 
