@@ -231,75 +231,43 @@ class TestInventory(TestCase):
     
     # Test to update existing inventory records with random valid values
     def test_update_inventory_records(self):
+        """Test for successful update of randomly selected fields of an inventory record"""
         # Create a test record
-        test_record = InventoryFactory()
-        response = self.client.post(BASE_URL, json=test_record.serialize())
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        logging.debug('Created record, %s', Inventory().deserialize(response.get_json()))
-
-        # Get record as JSON
-        data = response.get_json()
-        logging.debug(data)
-        fields = ['quantity', 'restock_level', 'reorder_quantity']
-        quantities = [10, 15, 20]
-        restock_levels = [1, 2, 3]
-
-        """ Randomly select any 2 fields and update them """
-        # Select 1st field
-        field1 = random.choice(fields)
-        logging.debug('Field selected for update: %s', field1)
-        if field1 == 'quantity' or field1 == 'reorder_quantity':
-            logging.debug('Old value = %d', data[field1])
-            qset = set(quantities)
-            qset.remove(data[field1])
-            data[field1] = random.choice(list(qset))
-            logging.debug('New value = %d', data[field1])
-        elif field1 == 'restock_level':
-            logging.debug('Old value = %d', data[field1])
-            rlset = set(restock_levels)
-            rlset.remove(data[field1])
-            data[field1] = random.choice(list(set(rlset)))
-            logging.debug('New value = %d', data[field1])
-        elif field1 == 'active':
-            logging.debug('Old value = %r', data[field1])
-            data[field1] = not data[field1]
-            logging.debug('New value = %r', data[field1])
-
-        # Remove selected field
-        fset = set(fields)
-        fset.remove(field1)
-        fields = list(fset)
-
-        # Select another field
-        field2 = random.choice(fields)
-        if field2 == 'quantity' or field2 == 'reorder_quantity':
-            logging.debug('Old value = %d', data[field2])
-            qset = set(quantities)
-            qset.remove(data[field2])
-            data[field2] = random.choice(list(qset))
-            logging.debug('New value = %d', data[field2])
-        elif field2 == 'restock_level':
-            logging.debug('Old value = %d', data[field2])
-            qset = set(quantities)
-            rlset = set(restock_levels)
-            rlset.remove(data[field2])
-            data[field2] = random.choice(list(rlset))
-            logging.debug('New value = %d', data[field2])
-        elif field2 == 'active':
-            logging.debug('Old value = %r', data[field2])
-            data[field2] = not data[field2]
-            logging.debug('New value = %r', data[field2])
-
+        test_record = self._create_inventory_records(1)[0]
+        data = test_record.serialize()
+        data["quantity"] += 1
+        data["reorder_quantity"] += 1
+        data["restock_level"] += 1
+        data["name"] = "some_name"
         # Make call to update record
-        response = self.client.put("{}/{}/{}".format(BASE_URL, data['product_id'], data['condition']), json=data)
+        response = self.client.put(f"{BASE_URL}/{data['product_id']}", json=data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         updated_record = response.get_json()
-        self.assertEqual(updated_record[field1], data[field1])
-        self.assertEqual(updated_record[field2], data[field2])
+        self.assertEqual(data, updated_record)
 
     # Test to attempt update with invalid values
     def test_attempt_incorrect_value_update(self):
         """Test to check if a record gets updated with an invalid value for a particular field"""
+        test_record = self._create_inventory_records(1)[0]
+        data = test_record.serialize()
+
+        for field in ["quantity", "reorder_quantity", "restock_level"]:
+            temp = data[field]
+            data[field] = '100'
+            response = self.client.put(f"{BASE_URL}/{data['product_id']}", json=data)
+            self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+            data[field] = temp
+
+        for field in ["quantity", "reorder_quantity", "restock_level"]:
+            temp = data[field]
+            data[field] = -20
+            response = self.client.put(f"{BASE_URL}/{data['product_id']}", json=data)
+            self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+            data[field] = temp
+
+    # Test update for non-existent records
+    def update_non_existent_record(self):
+        """Update a record that does not exist in the database"""
         test_record = InventoryFactory()
         response = self.client.post(BASE_URL, json=test_record.serialize())
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -307,24 +275,9 @@ class TestInventory(TestCase):
 
         # Get record as JSON
         data = response.get_json()
-        logging.debug(data)
-        data['quantity'] = '100'
-        response = self.client.put("{}/{}/{}".format(BASE_URL, data['product_id'], data['condition']), json=data)
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.get_json(), {"Result": "Invalid request"})
-        data['quantity'] = 20
-        data['reorder_quantity'] = '200'
-        response = self.client.put("{}/{}/{}".format(BASE_URL, data['product_id'], data['condition']), json=data)
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.get_json(), {"Result": "Invalid request"})
-        data['reorder_quantity'] = 10
-        data['restock_level'] = '3'
-        response = self.client.put("{}/{}/{}".format(BASE_URL, data['product_id'], data['condition']), json=data)
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.get_json(), {"Result": "Invalid request"})
-
-        
-
+        data['product_id'] = None
+        response = self.client.put(f"{BASE_URL}/{data['product_id']}/", json=data)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
            
     def test_read_records(self):
         record = self._create_inventory_records(1)[0]

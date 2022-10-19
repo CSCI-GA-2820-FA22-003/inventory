@@ -6,7 +6,7 @@ import os
 import logging
 import unittest
 from service import app
-from service.models import Inventory, DataValidationError, db
+from service.models import Inventory, DataValidationError, OutOfRangeError, db
 from tests.factories import InventoryFactory
 
 DATABASE_URI = os.getenv(
@@ -117,6 +117,25 @@ class TestInventory(unittest.TestCase):
         data = "this is not a dictionary"
         record = Inventory()
         self.assertRaises(DataValidationError, record.deserialize, data)
+
+
+    def test_deserialize_bad_type_fields(self):
+        record = InventoryFactory()
+        request = record.serialize()
+        for field in ["quantity", "reorder_quantity", "restock_level"]:
+            temp = request[field]
+            request[field] = "100"
+            self.assertRaises(DataValidationError, record.deserialize, request)
+            request[field] = temp
+
+    def test_deserialize_out_of_range_values(self):
+        record = InventoryFactory()
+        request = record.serialize()
+        for field in ["quantity", "reorder_quantity", "restock_level"]:
+            temp = request[field]
+            request[field] = -20
+            self.assertRaises(OutOfRangeError, record.deserialize, request)
+            request[field] = temp
 
 
     def test_read_a_record(self):
