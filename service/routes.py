@@ -51,14 +51,14 @@ def get_inventory_records(product_id):
     # fetch the condition from the payload of the data
     app.logger.info("Reading the given record")
     check_content_type("application/json")
-    inventory = Inventory()
-    inventory.deserialize(request.get_json())
-    product = inventory.find((inventory.product_id, inventory.condition))
 
-    if not product:
+    inventory = find_from_request_json(request.get_json())
+
+    if not inventory:
         abort(status.HTTP_404_NOT_FOUND, f"Product with id '{product_id}' was not found.")
-    app.logger.info("Returning product: %s", product.name)
-    return jsonify(product.serialize()), status.HTTP_200_OK
+
+    app.logger.info("Returning product: %s", inventory.name)
+    return jsonify(inventory.serialize()), status.HTTP_200_OK
 
 
 @app.route("/inventory", methods=["POST"])
@@ -159,3 +159,8 @@ def check_content_type(content_type):
         status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
         f"Content-Type must be {content_type}",
     )
+
+def find_from_request_json(request_body):
+    inventory = Inventory()
+    inventory.deserialize(request_body)
+    return Inventory.find((inventory.product_id, inventory.condition))
