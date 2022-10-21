@@ -20,10 +20,15 @@ from . import app
 @app.route("/")
 def index():
     """ Root URL response """
+    app.logger.info("Request for Root URL")
     return (
-        "Reminder: return some useful information in json format about the service here",
-        status.HTTP_200_OK,
-    )
+        jsonify(
+            name="Inventory Demo REST API Service",
+            version="1.0",
+            paths=url_for("list_inventory_records", _external=True),
+        ),
+        status.HTTP_200_OK
+     )
 
 
 ######################################################################
@@ -37,7 +42,7 @@ def init_db():
     Inventory.init_db(app)
 
 
-@app.route("/inventory-records/<product_id>", methods=["GET"])
+@app.route("/inventory/<product_id>", methods=["GET"])
 def get_inventory_records(product_id):
     """
     Retrieve a single record
@@ -56,7 +61,7 @@ def get_inventory_records(product_id):
     return jsonify(product.serialize()), status.HTTP_200_OK
 
 
-@app.route("/inventory-records", methods=["POST"])
+@app.route("/inventory", methods=["POST"])
 def create_inventory_records():
     """
     Creates inventory record
@@ -84,7 +89,7 @@ def create_inventory_records():
     return jsonify(inventory.serialize()), status.HTTP_201_CREATED, {"Location": location_url}
 
 
-@app.route("/inventory-records", methods=["GET"])
+@app.route("/inventory", methods=["GET"])
 def list_inventory_records():
     """Returns all of the Inventory records"""
     app.logger.info("Request list of inventory records")
@@ -94,7 +99,7 @@ def list_inventory_records():
     return jsonify(results), status.HTTP_200_OK
 
 
-@app.route("/inventory-records/<product_id>", methods=["DELETE"])
+@app.route("/inventory/<product_id>", methods=["DELETE"])
 def delete_inventory_record(product_id):
     """Deletes inventory record
 
@@ -115,8 +120,8 @@ def delete_inventory_record(product_id):
     return "", status.HTTP_204_NO_CONTENT
 
 
-@app.route("/inventory-records/<int:product_id>/", methods=["PUT"])
-@app.route("/inventory-records/<int:product_id>", methods=["PUT"])
+@app.route("/inventory/<int:product_id>/", methods=["PUT"])
+@app.route("/inventory/<int:product_id>", methods=["PUT"])
 def update_inventory_records(product_id):
     """Updates an existing inventory record given that it is present in the database table"""
     app.logger.info("Update an inventory record")
