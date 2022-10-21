@@ -15,6 +15,7 @@ logger = logging.getLogger("flask.app")
 # Create the SQLAlchemy object to be initialized later in init_db()
 db = SQLAlchemy()
 
+
 def init_db(app):
     """Initialize the SQLAlchemy app"""
     Inventory.init_db(app)
@@ -45,7 +46,6 @@ class Inventory(db.Model):
     app = None
 
     # Table Schema
-    
     product_id = db.Column(db.Integer, primary_key=True, autoincrement=False)
     name = db.Column(db.String(63), nullable=False)
     condition = db.Column(db.Enum(Condition), nullable=False, default=Condition.NEW.name, primary_key=True)
@@ -99,7 +99,7 @@ class Inventory(db.Model):
             data (dict): A dictionary containing the resource data
         """
         try:
-            self.product_id=data["product_id"]
+            self.product_id = data["product_id"]
             self.condition = self.Condition(data["condition"])
 
             if data.get("name"):
@@ -140,8 +140,6 @@ class Inventory(db.Model):
         db.init_app(app)
         app.app_context().push()
         db.create_all()  # make our sqlalchemy tables
-        
-        
 
     @classmethod
     def all(cls):
@@ -152,11 +150,11 @@ class Inventory(db.Model):
     @classmethod
     def find(cls, by):
         """ Finds a Inventory by it's ID """
-        by_id, by_condition=by
+        by_id, by_condition = by
         logger.info("Processing lookup for id %s and condition %s ...", by_id, by_condition)
         return cls.query.get((by_id, by_condition))
 
-    #uncomment for sprint 2
+    # uncomment for sprint 2
     # @classmethod
     # def find_by_name(cls, name):
     #     """Returns all Inventories with the given name
