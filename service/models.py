@@ -93,30 +93,13 @@ class Inventory(db.Model):
 
     def deserialize(self, data):
         """
-        Deserializes a Inventory from a dictionary
+        Wrapper for deserializing an Inventory from a dictionary
 
         Args:
             data (dict): A dictionary containing the resource data
         """
         try:
-            self.product_id = data["product_id"]
-            self.condition = self.Condition(data["condition"])
-
-            if data.get("name"):
-                if isinstance(data.get("name"), str):
-                    self.name = data.get("name")
-                else:
-                    raise TypeError
-
-            for field in ["quantity", "reorder_quantity", "restock_level"]:
-                if data.get(field):
-                    if not isinstance(data.get(field), int):
-                        raise TypeError
-                    elif data.get(field) < 0:
-                        raise ValueError
-                    else:
-                        setattr(self, field, data.get(field))
-
+            self.deserialize_util(data)
         except KeyError as error:
             raise DataValidationError(
                 f"Invalid Inventory: missing {error.args[0]}"
@@ -130,6 +113,31 @@ class Inventory(db.Model):
                 f"Invalid Inventory: body of request contained values out of range - Error message: {error}"
             ) from error
         return self
+
+    def deserialize_util(self, data):
+        """
+        Deserializing an Inventory from a dictionary
+
+        Args:
+            data (dict): A dictionary containing the resource data
+        """
+        self.product_id = data["product_id"]
+        self.condition = self.Condition(data["condition"])
+
+        if data.get("name"):
+            if isinstance(data.get("name"), str):
+                self.name = data.get("name")
+            else:
+                raise TypeError
+
+        for field in ["quantity", "reorder_quantity", "restock_level"]:
+            if data.get(field):
+                if not isinstance(data.get(field), int):
+                    raise TypeError
+                elif data.get(field) < 0:
+                    raise ValueError
+                else:
+                    setattr(self, field, data.get(field))
 
     @classmethod
     def init_db(cls, app: Flask):
