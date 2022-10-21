@@ -104,6 +104,9 @@ class Inventory(db.Model):
             data (dict): A dictionary containing the resource data
         """
         try:
+            if not isinstance(data, dict):
+                raise TypeError
+
             self.deserialize_util(data)
         except KeyError as error:
             raise DataValidationError(
@@ -126,8 +129,11 @@ class Inventory(db.Model):
         Args:
             data (dict): A dictionary containing the resource data
         """
-        self.product_id = data["product_id"]
-        self.condition = self.Condition(data["condition"])
+        if data.get("product_id"):
+            self.product_id = data.get("product_id")
+        else:
+            raise TypeError
+        self.condition = self.Condition(data.get("condition", "new"))
 
         if data.get("name"):
             if isinstance(data.get("name"), str):
