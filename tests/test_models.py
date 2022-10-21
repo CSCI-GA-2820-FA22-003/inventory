@@ -164,19 +164,13 @@ class TestInventory(unittest.TestCase):
         logging.debug(record)
         record.create()
         self.assertIsNotNone(record.product_id)
-        # Change it an save it
-        record.reorder_quantity = 15
-        record.quantity = 10
-        record.restock_level = 2
-        original_id = record.product_id
-        record.update()
-        self.assertEqual(record.product_id, original_id)
-        self.assertEqual(record.reorder_quantity, 15)
-        self.assertEqual(record.quantity, 10)
-        self.assertEqual(record.restock_level, 2)
-        records = Inventory.all()
-        self.assertEqual(len(records), 1)
-        self.assertEqual(records[0].product_id, original_id)
-        self.assertEqual(records[0].reorder_quantity, 15)
-        self.assertEqual(records[0].quantity, 10)
-        self.assertEqual(records[0].restock_level, 2)
+
+        request_body = record.serialize()
+        request_body["quantity"] = 10
+        request_body["restock_level"] = 2
+        request_body["reorder_quantity"] = 15
+        new_data = Inventory()
+        new_data.deserialize(request_body)
+        record.update(new_data)
+
+        self.assertEqual(record.serialize(), request_body)
