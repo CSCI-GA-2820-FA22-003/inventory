@@ -133,13 +133,8 @@ def update_inventory_records(product_id):
     if not existing_record:
         abort(status.HTTP_404_NOT_FOUND, f"Product with id '{product_id}' was not found.")
 
-    for field in ["name", "quantity", "reorder_quantity", "restock_level"]:
-        value = getattr(new_record, field) or getattr(existing_record, field)
-        setattr(existing_record, field, value)
-    existing_record.updated_at = datetime.utcnow()
-
     # Apply update to database & return as JSON
-    existing_record.update()
+    existing_record.update(new_record)
     return jsonify(existing_record.serialize()), status.HTTP_200_OK
 
 ######################################################################

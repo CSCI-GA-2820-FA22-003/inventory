@@ -67,10 +67,15 @@ class Inventory(db.Model):
         db.session.add(self)
         db.session.commit()
 
-    def update(self):
+    def update(self, new_data):
         """
         Updates a Inventory to the database
         """
+        self.name = new_data.name or self.name
+        self.quantity = new_data.quantity or self.quantity
+        self.reorder_quantity = new_data.reorder_quantity or self.reorder_quantity
+        self.restock_level = new_data.restock_level or self.restock_level
+        self.updated_at = datetime.utcnow()
         logger.info("Saving %s", self.name)
         db.session.commit()
 
