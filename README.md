@@ -1,13 +1,24 @@
-# NYU DevOps Project Template
+<h1 align="center"> NYU DevOps /Inventory </h1>
+<h4 align="center"> An Inventory Microservice </h4>
+<img src="Images/inventory.png" alt="isolated"/>
+<h4 align="center">
+
+##
 
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Python](https://img.shields.io/badge/Language-Python-blue.svg)](https://python.org/)
 
-This is a skeleton you can use to start your projects
+<h4 align="center">
+Inventory is a RESTFul microservice in the eCommerce application
 
-## Overview
+## :star: About Us
 
-This project template contains starter code for your class project. The `/service` folder contains your `models.py` file for your model and a `routes.py` file for your service. The `/tests` folder has test case starter code for testing the model and the service separately. All you need to do is add your functionality. You can use the [lab-flask-tdd](https://github.com/nyu-devops/lab-flask-tdd) for code examples to copy from.
+The Inventory resource is an integral micro-service of the eCommerce application. This micro-service is used to efficiently organize and manage products in the inventory for the proper functioning of the eCommerce application.
+
+## :mag: Overview
+
+The project's `/service` folder contains `models.py` file for the model and `routes.py` file for the service. The `/tests` folder has `test_models.py` and `test_routes.py` to test `models.py` and `routes.py` separately. The `/tests` folder also contains `factories.py` which can be used to generate a random Inventory record.
+
 
 ## Automatic Setup
 
