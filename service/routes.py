@@ -7,7 +7,6 @@ Describe what your service does here
 from flask import jsonify, request, url_for, abort
 from .common import status  # HTTP Status Codes
 from service.models import Inventory
-from datetime import datetime
 
 
 # Import Flask application
@@ -153,6 +152,7 @@ def check_content_type(content_type):
         status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
         f"Content-Type must be {content_type}",
     )
+
 
 def find_from_request_json(request_body):
     inventory = Inventory()
