@@ -19,7 +19,7 @@ from tests.factories import InventoryFactory
 DATABASE_URI = os.getenv(
     "DATABASE_URI", "postgresql://postgres:postgres@localhost:5432/testdb"
 )
-BASE_URL = "/inventory-records"
+BASE_URL = "/inventory"
 ######################################################################
 #  T E S T   C A S E S
 ######################################################################
