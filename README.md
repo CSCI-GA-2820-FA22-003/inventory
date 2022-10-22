@@ -1,38 +1,37 @@
-# NYU DevOps Project Template
+<h1 align="center"> NYU DevOps /Inventory </h1>
+<h4 align="center"> An Inventory Microservice </h4>
+<p align=center>
+<img src="Images/inventory.png" alt="isolated" />
+</p>
+<h4 align="center">
+
+
 
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Python](https://img.shields.io/badge/Language-Python-blue.svg)](https://python.org/)
 
-This is a skeleton you can use to start your projects
+<h4 align="center">
+Inventory is a RESTFul microservice in the eCommerce application
 
-## Overview
+## :star: About Us
 
-This project template contains starter code for your class project. The `/service` folder contains your `models.py` file for your model and a `routes.py` file for your service. The `/tests` folder has test case starter code for testing the model and the service separately. All you need to do is add your functionality. You can use the [lab-flask-tdd](https://github.com/nyu-devops/lab-flask-tdd) for code examples to copy from.
+The Inventory resource is an integral micro-service of the eCommerce application. This micro-service is used to efficiently organize and manage products in the inventory for the proper functioning of the eCommerce application.
 
-## Automatic Setup
+## :mag: Overview
 
-The best way to use this repo is to start your own repo using it as a git template. To do this just press the green **Use this template** button in GitHub and this will become the source for your repository.
+The project's `/service` folder contains `models.py` file for the model and `routes.py` file for the service. The `/tests` folder has `test_models.py` and `test_routes.py` to test `models.py` and `routes.py` separately. The `/tests` folder also contains `factories.py` which can be used to generate a random Inventory record.
 
-## Manual Setup
 
-You can also clone this repository and then copy and paste the starter code into your project repo folder on your local computer. Be careful not to copy over your own `README.md` file so be selective in what you copy.
+## :computer: Setup
 
-There are 4 hidden files that you will need to copy manually if you use the Mac Finder or Windows Explorer to copy files from this folder into your repo folder.
+To run this project ensure you have [docker](https://docs.docker.com/engine/install/) installed and running in your local machine. Then clone this repository and navigate to the github repository while opening in Visual Studio Code. Then in the terminal type `flask run` and copy the HTTP URL into your web browser or use the Postman collection [here](https://drive.google.com/file/d/1wSYoq8DPg0hr0spHzS9AxRHpN-LQKhzt/view?usp=sharing) to test the application.
 
-These should be copied using a bash shell as follows:
-
-```bash
-    cp .gitignore  ../<your_repo_folder>/
-    cp .flaskenv ../<your_repo_folder>/
-    cp .gitattributes ../<your_repo_folder>/
-```
-
-## Contents
+## :open_file_folder: Contents
 
 The project contains the following:
 
 ```text
-.gitignore          - this will ignore vagrant and other metadata files
+.gitignore          - this will ignore git files and other metadata files
 .flaskenv           - Environment variables to configure Flask
 .gitattributes      - File to gix Windows CRLF issues
 .devcontainers/     - Folder with support for VSCode Remote Containers
@@ -52,13 +51,167 @@ service/                   - service python package
 tests/              - test cases package
 ├── __init__.py     - package initializer
 ├── test_models.py  - test suite for business models
-└── test_routes.py  - test suite for service routes
+├── test_routes.py  - test suite for service routes
+└── factories.py    - used to generate infinite number of random inventory record
 ```
 
-## License
+## :memo: Schema
 
-Copyright (c) John Rofrano. All rights reserved.
+Below are the attributes of the inventory table
+
+```
+- product_id: int: pk
+- name: str
+- condition: enum {"new", "refurbished", "return"}: pk (default: new)
+- quantity: int (default: 0)
+- reorder_quantity: int (default: 0)
+- restock_level: int (default: 0)
+- active: boolean (used to indicate soft deletes)
+- created_at: datetime
+- updated_at: datetime
+```
+
+## :golf: Endpoints
+
+#### `POST /inventory`
+
+Create an inventory record.
+
+#### Request body
+```
+{
+    "product_id": 2,
+    "condition": "return",
+    "name": "laptop",
+    "quantity": 20,
+    "reorder_quantity": 15,
+    "restock_level": 3
+}
+```
+```
+{
+    "product_id": 2,
+    "name": "laptop"
+}
+```
+The fields `condition`, `quantity`, `reorder_quantity` and `restock_level` are optional. If not passed, they assume default values of `NEW`, `0`, `0` and `0` respectively.
+
+#### Response
+Created record
+```
+{
+    "product_id": 2,
+    "condition": "return",
+    "name": "laptop",
+    "quantity": 20,
+    "reorder_quantity": 15,
+    "restock_level": 3
+}
+```
+The created record is returned in the response.
+
+#### `GET /inventory/{product_id}`
+
+#### Request
+
+```
+{
+    "product_id": 2,
+    "condition": "new"
+}
+```
+
+#### Response
+```
+{
+    "product_id": 2,
+    "condition": "new",
+    "name": "laptop",
+    "quantity": 20,
+    "reorder_quantity": 15,
+    "restock_level": 3
+}
+```
+The record that matches the keys `product_id` and `condition` is returned in the response.
+
+#### `GET /inventory`
+
+List all inventory records.
+
+#### Response
+```
+[
+    {
+	"condition": "return",
+	"name": "laptop",
+	"product_id": 2,
+	"quantity": 20,
+	"reorder_quantity": 15,
+	"restock_level": 3
+    }
+]
+```
+The list of inventory records is returned in the response.
+
+#### `PUT /inventory/{product_id}`
+
+Update an inventory record.
+
+#### Request
+```
+{
+    "product_id": 2,
+    "condition": "new",
+    "quantity": 2,
+    "reorder_quantity": 1,
+    "restock_level": 3
+}
+```
+Find an inventory record by `product_id` and `condition`. The fields `quantity`, `reorder_quantity`, `restock_level` and `name` are updateable and optional.
+
+#### Response
+```
+{
+    "product_id": 2,
+    "condition": "new",
+    "name": "laptop",
+    "quantity": 2,
+    "reorder_quantity": 1,
+    "restock_level": 3
+}
+```
+Update the fields of existing record with the passed values. Return the updated record in the response.
+
+#### `DELETE /inventory/{product_id}`
+
+Delete inventory record.
+
+#### Request
+```
+{
+    "product_id": 2,
+    "condition": "new"
+}
+```
+
+#### Response
+```
+{
+    "product_id": 2,
+    "condition": "new",
+    "name": "laptop",
+    "quantity": 20,
+    "reorder_quantity": 15,
+    "restock_level": 3
+}
+```
+The record that matches the keys `product_id` and `condition` is returned in the response.
+
+## :wrench: Running Tests
+
+Tests can be run using nosetests. Just type in `nosetests tests` in your terminal to check if all tests are being satisfied and to identify the code coverage.
+
+## :sound: License
 
 Licensed under the Apache License. See [LICENSE](LICENSE)
 
-This repository is part of the NYU masters class: **CSCI-GA.2820-001 DevOps and Agile Methodologies** created and taught by *John Rofrano*, Adjunct Instructor, NYU Courant Institute, Graduate Division, Computer Science, and NYU Stern School of Business.
