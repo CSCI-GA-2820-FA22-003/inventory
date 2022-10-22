@@ -302,3 +302,25 @@ class TestInventory(TestCase):
         logging.debug("Test Read Records: %s", record.serialize())
         response = self.client.get(f"{BASE_URL}/{record.product_id}", json= record.serialize())
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_method_not_allowed(self):
+        """Test if API is called with the wrong method type"""
+        test_record = InventoryFactory()
+        #calling a post with a product id
+
+        logging.debug("Test Inventory Records with method not allowed post request: %s", test_record.serialize())
+        response = self.client.post(BASE_URL+"/"+str(test_record.product_id), json=test_record.serialize())
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+        
+        #calling a delete method without product id
+        logging.debug("Test Inventory Records with method not allowed delete request: %s", test_record.serialize())
+        response = self.client.delete(f"{BASE_URL}", json=test_record.serialize())
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+        #calling an update method without product id
+        logging.debug("Test Inventory Records with method not allowed update request: %s", test_record.serialize())
+        response = self.client.put(f"{BASE_URL}", json=test_record.serialize())
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+
+
