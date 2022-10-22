@@ -1,6 +1,8 @@
 <h1 align="center"> NYU DevOps /Inventory </h1>
 <h4 align="center"> An Inventory Microservice </h4>
+<p align=center>
 <img src="Images/inventory.png" alt="isolated"/>
+</p>
 <h4 align="center">
 
 
@@ -14,23 +16,19 @@ Inventory is a RESTFul microservice in the eCommerce application
 ## 
 
 ## :star: About Us
-<hr/>
 
 The Inventory resource is an integral micro-service of the eCommerce application. This micro-service is used to efficiently organize and manage products in the inventory for the proper functioning of the eCommerce application.
 
 ## :mag: Overview
-<hr/>
 
 The project's `/service` folder contains `models.py` file for the model and `routes.py` file for the service. The `/tests` folder has `test_models.py` and `test_routes.py` to test `models.py` and `routes.py` separately. The `/tests` folder also contains `factories.py` which can be used to generate a random Inventory record.
 
 
 ## :computer: Setup
-<hr/>
 
 To run this project ensure you have [docker](https://docs.docker.com/engine/install/) installed and running in your local machine. Then clone this repository and navigate to the github repository while opening in Visual Studio Code. Then in the terminal type `flask run` and copy the HTTP URL into your web browser or use the Postman collection [here](https://drive.google.com/file/d/1wSYoq8DPg0hr0spHzS9AxRHpN-LQKhzt/view?usp=sharing) to test the application.
 
 ## :open_file_folder: Contents
-<hr/>
 
 The project contains the following:
 
@@ -60,7 +58,6 @@ tests/              - test cases package
 ```
 
 ## :memo: Schema
-<hr/>
 
 Below are the attributes of the inventory table
 
@@ -77,7 +74,6 @@ Below are the attributes of the inventory table
 ```
 
 ## :golf: Endpoints
-<hr/>
 
 #### `POST /inventory`
 
@@ -214,11 +210,10 @@ Delete inventory record.
 The record that matches the keys `product_id` and `condition` is returned in the response.
 
 ## :wrench: Running Tests
-<hr/>
+
 Tests can be run using nosetests. Just type in `nosetests tests` in your terminal to check if all tests are being satisfied and to identify the code coverage.
 
 ## :sound: License
-<hr/>
 
 Licensed under the Apache License. See [LICENSE](LICENSE)
 
