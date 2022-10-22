@@ -309,7 +309,7 @@ class TestInventory(TestCase):
         #calling a post with a product id
 
         logging.debug("Test Inventory Records with method not allowed post request: %s", test_record.serialize())
-        response = self.client.post(BASE_URL+"/"+str(test_record.product_id), json=test_record.serialize())
+        response = self.client.post(f"{BASE_URL}/{test_record.product_id}", json=test_record.serialize())
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
         
         #calling a delete method without product id
