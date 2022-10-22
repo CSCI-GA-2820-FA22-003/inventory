@@ -1,7 +1,7 @@
 <h1 align="center"> NYU DevOps /Inventory </h1>
 <h4 align="center"> An Inventory Microservice </h4>
 <p align=center>
-<img src="Images/inventory.png" alt="isolated"/>
+<img src="Images/inventory.png" alt="isolated" />
 </p>
 <h4 align="center">
 
@@ -12,8 +12,6 @@
 
 <h4 align="center">
 Inventory is a RESTFul microservice in the eCommerce application
-
-## 
 
 ## :star: About Us
 
