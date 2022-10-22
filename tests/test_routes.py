@@ -231,7 +231,7 @@ class TestInventory(TestCase):
     
     # Test to update existing inventory records with random valid values
     def test_update_inventory_records(self):
-        """Test for successful update of randomly selected fields of an inventory record"""
+        """Test for successful update of an inventory record"""
         # Create a test record
         test_record = self._create_inventory_records(1)[0]
         data = test_record.serialize()

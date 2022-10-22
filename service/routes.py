@@ -7,7 +7,6 @@ Describe what your service does here
 from flask import jsonify, request, url_for, abort
 from .common import status  # HTTP Status Codes
 from service.models import Inventory
-from datetime import datetime
 
 
 # Import Flask application
@@ -51,14 +50,14 @@ def get_inventory_records(product_id):
     # fetch the condition from the payload of the data
     app.logger.info("Reading the given record")
     check_content_type("application/json")
-    inventory = Inventory()
-    inventory.deserialize(request.get_json())
-    product = inventory.find((inventory.product_id, inventory.condition))
 
-    if not product:
+    inventory = find_from_request_json(request.get_json())
+
+    if not inventory:
         abort(status.HTTP_404_NOT_FOUND, f"Product with id '{product_id}' was not found.")
-    app.logger.info("Returning product: %s", product.name)
-    return jsonify(product.serialize()), status.HTTP_200_OK
+
+    app.logger.info("Returning product: %s", inventory.name)
+    return jsonify(inventory.serialize()), status.HTTP_200_OK
 
 
 @app.route("/inventory", methods=["POST"])
@@ -71,13 +70,9 @@ def create_inventory_records():
     check_content_type("application/json")
     inventory = Inventory()
     data = request.get_json()
-
-    if "condition" not in data or data["condition"] is None:
-        data["condition"] = "new"
-
     inventory.deserialize(data)
-    product = inventory.find((inventory.product_id, inventory.condition))
-    if product:
+    existing_inventory = Inventory.find((inventory.product_id, inventory.condition))
+    if existing_inventory:
         error = f"Product with id '{inventory.product_id}' and condition '{inventory.condition}' already exists."
         abort(status.HTTP_409_CONFLICT, error)
 
@@ -106,13 +101,11 @@ def delete_inventory_record(product_id):
     @param: product_id is the id of the record that is to be deleted
     """
     app.logger.info("Request to delete inventory record with id: %s", product_id)
-    inventory = Inventory()
-    inventory.deserialize(request.get_json())
-    inventory_record = inventory.find((inventory.product_id, inventory.condition))
-    app.logger.info(f"For the provided id, Inventory Record returned is: {inventory_record}")
+    inventory = find_from_request_json(request.get_json())
+    app.logger.info(f"For the provided id, Inventory Record returned is: {inventory}")
 
-    if inventory_record:
-        inventory_record.delete()
+    if inventory:
+        inventory.delete()
     else:
         abort(status.HTTP_404_NOT_FOUND, f"Product with id '{product_id}' was not found.")
 
@@ -133,13 +126,8 @@ def update_inventory_records(product_id):
     if not existing_record:
         abort(status.HTTP_404_NOT_FOUND, f"Product with id '{product_id}' was not found.")
 
-    for field in ["name", "quantity", "reorder_quantity", "restock_level"]:
-        value = getattr(new_record, field) or getattr(existing_record, field)
-        setattr(existing_record, field, value)
-    existing_record.updated_at = datetime.utcnow()
-
     # Apply update to database & return as JSON
-    existing_record.update()
+    existing_record.update(new_record)
     return jsonify(existing_record.serialize()), status.HTTP_200_OK
 
 ######################################################################
@@ -164,3 +152,9 @@ def check_content_type(content_type):
         status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
         f"Content-Type must be {content_type}",
     )
+
+
+def find_from_request_json(request_body):
+    inventory = Inventory()
+    inventory.deserialize(request_body)
+    return Inventory.find((inventory.product_id, inventory.condition))
