@@ -322,5 +322,9 @@ class TestInventory(TestCase):
         response = self.client.put(f"{BASE_URL}", json=test_record.serialize())
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
-
+    def test_health(self):
+        """ It should call the health endpoint """
+        response = self.client.get("/health")
+        self.assertEqual(response.get_json(), {"status": "OK"})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
