@@ -13,6 +13,13 @@ from service.models import Inventory
 from . import app
 
 
+@app.route("/health")
+def health():
+    """ Health endpoint """
+    app.logger.info("Service active, health endpoint successfully called")
+    return jsonify(status="OK"), status.HTTP_200_OK
+
+
 ######################################################################
 # GET INDEX
 ######################################################################
