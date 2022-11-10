@@ -5,9 +5,8 @@ Describe what your service does here
 """
 
 from flask import jsonify, request, url_for, abort
-from .common import status  # HTTP Status Codes
 from service.models import Inventory
-
+from .common import status  # HTTP Status Codes
 
 # Import Flask application
 from . import app
@@ -71,7 +70,7 @@ def create_inventory_records():
     inventory = Inventory()
     data = request.get_json()
     inventory.deserialize(data)
-    
+
     existing_inventory = Inventory.find((inventory.product_id, inventory.condition))
     if existing_inventory:
         error = f"Product with id '{inventory.product_id}' and condition '{inventory.condition}' already exists."
@@ -82,13 +81,14 @@ def create_inventory_records():
 
     app.logger.info(f"Inventory product with ID {inventory.product_id} and condition: {inventory.condition} created.")
     # return jsonify(inventory.serialize()), status.HTTP_201_CREATED
+
     return jsonify(inventory.serialize()), status.HTTP_201_CREATED, {"Location": location_url}
 
 
 @app.route("/inventory", methods=["GET"])
 def list_inventory_records():
     """Returns all of the Inventory records"""
-    records=[]
+    records = []
     name = request.args.get("name")
     condition = request.args.get("condition")
     quantity = request.args.get("quantity")
@@ -99,7 +99,7 @@ def list_inventory_records():
         records = Inventory.find_by_name(name)
     elif condition:
         app.logger.info("Filtering by condition:%s", condition)
-        # = getattr(Condition, condition_value)
+        condition = Inventory.Condition(condition)
         records = Inventory.find_by_condition(condition)
     elif quantity:
         app.logger.info("Filtering by quantity: %s", quantity)

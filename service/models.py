@@ -141,8 +141,8 @@ class Inventory(db.Model):
                 self.name = data.get("name")
             else:
                 raise TypeError
-        
-        if data.get("active"):
+
+        if data.get("active") is not None:
             if isinstance(data.get("active"), bool):
                 self.active = data.get("active")
             else:
@@ -156,8 +156,6 @@ class Inventory(db.Model):
                     raise ValueError
                 else:
                     setattr(self, field, data.get(field))
-        
-
 
     @classmethod
     def init_db(cls, app: Flask):
@@ -182,7 +180,6 @@ class Inventory(db.Model):
         logger.info("Processing lookup for id %s and condition %s ...", by_id, by_condition)
         return cls.query.get((by_id, by_condition))
 
-
     @classmethod
     def find_by_name(cls, name):
         """Returns all Inventories with the given name
@@ -192,7 +189,7 @@ class Inventory(db.Model):
         """
         logger.info("Processing name query for %s ...", name)
         return cls.query.filter(cls.name == name)
-    
+
     @classmethod
     def find_by_condition(cls, condition):
         """Returns all Inventories with the given condition
@@ -202,7 +199,7 @@ class Inventory(db.Model):
         """
         logger.info("Processing condition query for %s ...", condition)
         return cls.query.filter(cls.condition == condition)
-    
+
     @classmethod
     def find_by_quantity(cls, quantity):
         """Returns all Inventories with the given quantity
@@ -212,7 +209,7 @@ class Inventory(db.Model):
         """
         logger.info("Processing quantity query for %s ...", quantity)
         return cls.query.filter(cls.quantity == quantity)
-    
+
     @classmethod
     def find_by_active(cls, active):
         """Returns all Inventories by their availability
