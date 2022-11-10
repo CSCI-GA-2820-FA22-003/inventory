@@ -4,9 +4,9 @@ Models for Inventory
 All of the models are stored in this module
 """
 import logging
-from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 import enum
+from flask_sqlalchemy import SQLAlchemy
 from flask import Flask
 
 
@@ -24,13 +24,9 @@ def init_db(app):
 class DataValidationError(Exception):
     """ Used for an data validation errors when deserializing """
 
-    pass
-
 
 class OutOfRangeError(Exception):
     """ Used for an data validation errors when deserializing """
-
-    pass
 
 
 class Inventory(db.Model):
@@ -39,6 +35,7 @@ class Inventory(db.Model):
     """
 
     class Condition(enum.Enum):
+        '''Definition of condition values'''
         NEW = 'new'
         REFURBISHED = 'refurbished'
         RETURN = 'return'
@@ -48,16 +45,19 @@ class Inventory(db.Model):
     # Table Schema
     product_id = db.Column(db.Integer, primary_key=True, autoincrement=False)
     name = db.Column(db.String(63), nullable=False)
-    condition = db.Column(db.Enum(Condition), nullable=False, default=Condition.NEW.name, primary_key=True)
+    condition = db.Column(db.Enum(Condition), nullable=False,
+                            default=Condition.NEW.name, primary_key=True)
     quantity = db.Column(db.Integer, nullable=False, default=0)
     reorder_quantity = db.Column(db.Integer, nullable=False, default=0)
     restock_level = db.Column(db.Integer, nullable=False, default=0)
     active = db.Column(db.Boolean, nullable=False, default=True)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow,
+                            onupdate=datetime.utcnow)
 
     def __repr__(self):
-        return "<Inventory %r product_id=[%s] condition=[%s]>" % (self.name, self.product_id, self.condition.value)
+        return f"<Inventory {self.name} product_id=[{self.product_id}] condition=[{self.condition}]>"
+
 
     def create(self):
         """
@@ -66,6 +66,7 @@ class Inventory(db.Model):
         logger.info("Creating %s", self.name)
         db.session.add(self)
         db.session.commit()
+
 
     def update(self, new_data):
         """
@@ -79,11 +80,13 @@ class Inventory(db.Model):
         logger.info("Saving %s", self.name)
         db.session.commit()
 
+
     def delete(self):
         """ Removes a Inventory from the data store """
         logger.info("Deleting %s", self.name)
         db.session.delete(self)
         db.session.commit()
+
 
     def serialize(self):
         """ Serializes a Inventory into a dictionary """
@@ -95,6 +98,7 @@ class Inventory(db.Model):
             "reorder_quantity": self.reorder_quantity,
             "restock_level": self.restock_level
         }
+
 
     def deserialize(self, data):
         """
@@ -113,14 +117,19 @@ class Inventory(db.Model):
                 f"Invalid Inventory: missing {error.args[0]}"
             ) from error
         except TypeError as error:
+            stmt = "Invalid Inventory: body of request contained bad or no data"
+            stmt += f"Error message: {error}"
             raise DataValidationError(
-                f"Invalid Inventory: body of request contained bad or no data - Error message: {error}"
+                stmt
             ) from error
         except ValueError as error:
+            stm = "Invalid Inventory: body of request contained values out of range"
+            stm += f" - Error message: {error}"
             raise OutOfRangeError(
-                f"Invalid Inventory: body of request contained values out of range - Error message: {error}"
+               stm
             ) from error
         return self
+
 
     def deserialize_util(self, data):
         """
@@ -145,10 +154,10 @@ class Inventory(db.Model):
             if data.get(field):
                 if not isinstance(data.get(field), int):
                     raise TypeError
-                elif data.get(field) < 0:
+                if data.get(field) < 0:
                     raise ValueError
-                else:
-                    setattr(self, field, data.get(field))
+                setattr(self, field, data.get(field))
+
 
     @classmethod
     def init_db(cls, app: Flask):
@@ -160,16 +169,18 @@ class Inventory(db.Model):
         app.app_context().push()
         db.create_all()  # make our sqlalchemy tables
 
+
     @classmethod
     def all(cls):
         """ Returns all of the Inventories in the database """
         logger.info("Processing all Inventories")
         return cls.query.all()
 
+
     @classmethod
-    def find(cls, by):
+    def find(cls, by_params):
         """ Finds a Inventory by it's ID """
-        by_id, by_condition = by
+        by_id, by_condition = by_params
         logger.info("Processing lookup for id %s and condition %s ...", by_id, by_condition)
         return cls.query.get((by_id, by_condition))
 
