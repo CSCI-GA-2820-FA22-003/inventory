@@ -71,6 +71,7 @@ def create_inventory_records():
     inventory = Inventory()
     data = request.get_json()
     inventory.deserialize(data)
+    
     existing_inventory = Inventory.find((inventory.product_id, inventory.condition))
     if existing_inventory:
         error = f"Product with id '{inventory.product_id}' and condition '{inventory.condition}' already exists."
@@ -98,7 +99,8 @@ def list_inventory_records():
         records = Inventory.find_by_name(name)
     elif condition:
         app.logger.info("Filtering by condition:%s", condition)
-        records = Inventory.find_by_condition(name)
+        # = getattr(Condition, condition_value)
+        records = Inventory.find_by_condition(condition)
     elif quantity:
         app.logger.info("Filtering by quantity: %s", quantity)
         records = Inventory.find_by_quantity(quantity)
@@ -110,8 +112,6 @@ def list_inventory_records():
         app.logger.info("Request list of all inventory records")
         records = Inventory.all()
 
-    
-    
     results = [record.serialize() for record in records]
     app.logger.info("Returning %d inventory records", len(results))
     return jsonify(results), status.HTTP_200_OK

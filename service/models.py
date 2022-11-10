@@ -93,7 +93,8 @@ class Inventory(db.Model):
             "condition": self.condition.value,
             "quantity": self.quantity,
             "reorder_quantity": self.reorder_quantity,
-            "restock_level": self.restock_level
+            "restock_level": self.restock_level,
+            "active": self.active
         }
 
     def deserialize(self, data):
@@ -140,6 +141,12 @@ class Inventory(db.Model):
                 self.name = data.get("name")
             else:
                 raise TypeError
+        
+        if data.get("active"):
+            if isinstance(data.get("active"), bool):
+                self.active = data.get("active")
+            else:
+                raise TypeError
 
         for field in ["quantity", "reorder_quantity", "restock_level"]:
             if data.get(field):
@@ -149,6 +156,8 @@ class Inventory(db.Model):
                     raise ValueError
                 else:
                     setattr(self, field, data.get(field))
+        
+
 
     @classmethod
     def init_db(cls, app: Flask):

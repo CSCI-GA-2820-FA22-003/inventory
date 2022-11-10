@@ -22,3 +22,4 @@ class InventoryFactory(factory.Factory):
     quantity = FuzzyChoice(choices=[10, 15, 20])
     reorder_quantity = FuzzyChoice(choices=[10, 15, 20])
     restock_level = FuzzyChoice(choices=[1, 2, 3])
+    active = FuzzyChoice(choices=[True, False])

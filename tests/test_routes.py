@@ -9,6 +9,7 @@ from cgi import test
 import os
 import logging
 import random
+from urllib.parse import quote_plus
 from unittest import TestCase
 from unittest.mock import MagicMock, patch
 from service import app, routes
@@ -91,9 +92,10 @@ class TestInventory(TestCase):
         self.assertEqual(new_record["quantity"], test_record.quantity)
         self.assertEqual(new_record["reorder_quantity"], test_record.reorder_quantity)
         self.assertEqual(new_record["restock_level"], test_record.restock_level)
+        self.assertEqual(new_record["active"], test_record.active)
 
     def test_create_inventory_records_with_defaults(self):
-        """ Test Create Products """
+        """ Test Create Products With Defaults"""
         test_record = InventoryFactory()
         request_body = {
             "product_id": test_record.product_id,
@@ -116,6 +118,7 @@ class TestInventory(TestCase):
         self.assertEqual(new_record["quantity"], 0)
         self.assertEqual(new_record["reorder_quantity"], 0)
         self.assertEqual(new_record["restock_level"], 0)
+        self.assertEqual(new_record["active"], True)
 
         #uncomment this once list all products works
         #Check that the location header was correct
@@ -150,6 +153,7 @@ class TestInventory(TestCase):
         self.assertEqual(new_record["quantity"], test_record.quantity)
         self.assertEqual(new_record["reorder_quantity"], test_record.reorder_quantity)
         self.assertEqual(new_record["restock_level"], test_record.restock_level)
+        self.assertEqual(new_record["active"], test_record.active)
 
         # Create a new record with the same data values as just inserted into the database, this should return a 409 conflict
         response = self.client.post(BASE_URL, json=test_record.serialize())
@@ -209,12 +213,16 @@ class TestInventory(TestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_list_inventory_records(self):
-        expected_records = self._create_inventory_records(5)
+        expected_records = self._create_inventory_records(2)
         expected_response = [record.serialize() for record in expected_records]
         response = self.client.get(BASE_URL)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.get_json()
-        self.assertEqual(len(data), 5)
+        self.assertEqual(len(data), 2)
+        
+        logging.info(
+            "List record=%s: %d = %s", data, len(expected_response), expected_response
+        )
         self.assertCountEqual(expected_response, data)
 
     # Test to update non-existent inventory records
@@ -322,5 +330,70 @@ class TestInventory(TestCase):
         response = self.client.put(f"{BASE_URL}", json=test_record.serialize())
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
+######################################################################
+    # T E S T   Q U E R Y   S T R I N G S
+######################################################################
+
+    def test_query_inventories_by_name(self):
+        """It should Query Inventories by Name"""
+        records = self._create_inventory_records(10)
+        test_name = records[0].name
+        name_list = [record for record in records if record.name == test_name]
+        logging.info("Name=%s: %d = %s", test_name, len(name_list), name_list)
+        resp = self.client.get(BASE_URL, query_string=f"name={quote_plus(test_name)}")
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        data = resp.get_json()
+        self.assertEqual(len(data), len(name_list))
+        # check the data just to be sure
+        for pet in data:
+            self.assertEqual(pet["name"], test_name)
+
+    # def test_query_inventories_by_condition(self):
+    #     """It should Query Inventories by Condition"""
+    #     records = self._create_inventory_records(10)
+    #     test_condition = records[0].condition.value
+    #     condition_list = [record for record in records if record.condition.value == test_condition]
+    #     logging.info(
+    #         "Category=%s: %d = %s", test_condition, len(condition_list), condition_list
+    #     )
+    #     resp = self.client.get(
+    #         BASE_URL, query_string=f"condition={quote_plus(test_condition)}"
+    #     )
+    #     self.assertEqual(resp.status_code, status.HTTP_200_OK)
+    #     data = resp.get_json()
+    #     self.assertEqual(len(data), len(condition_list))
+    #     # check the data just to be sure
+    #     # for record in data:
+    #     #     self.assertEqual(record["condition"], test_condition)
+
+    def test_query_inventories_by_active(self):
+        """It should Query Pets by Availability"""
+        records = self._create_inventory_records(3)
+        test_active = records[0].active
+        active_list = [record for record in records if record.active == test_active]
+        logging.info(
+            "Active=%s: %d = %s", test_active, len(active_list), active_list
+        )
+        resp = self.client.get(BASE_URL, query_string=f"active={str(test_active)}")
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        data = resp.get_json()
+        self.assertEqual(len(data), len(active_list))
+        # check the data just to be sure
+        for record in data:
+            self.assertEqual(record["active"], test_active)
+
+    # def test_query_pets_by_gender(self):
+    #     """It should Query Pets by Gender"""
+    #     pets = self._create_pets(10)
+    #     test_gender = pets[0].gender
+    #     gender_list = [pet for pet in pets if pet.gender.name == test_gender.name]
+    #     logging.info("Gender=%s: %d = %s", test_gender.name, len(gender_list), gender_list)
+    #     resp = self.client.get(BASE_URL, query_string=f"gender={quote_plus(test_gender.name)}")
+    #     self.assertEqual(resp.status_code, status.HTTP_200_OK)
+    #     data = resp.get_json()
+    #     self.assertEqual(len(data), len(gender_list))
+    #     # check the data just to be sure
+    #     for pet in data:
+    #         self.assertEqual(pet["gender"], test_gender.name)
 
 
