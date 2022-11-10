@@ -122,9 +122,7 @@ class Inventory(db.Model):
         except ValueError as error:
             stm = "Invalid Inventory: body of request contained values out of range"
             stm += f" - Error message: {error}"
-            raise OutOfRangeError(
-               stm
-            ) from error
+            raise OutOfRangeError(stm) from error
         return self
 
     def deserialize_util(self, data):

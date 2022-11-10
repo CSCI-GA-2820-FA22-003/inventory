@@ -34,7 +34,7 @@ def index():
             paths=url_for("list_inventory_records", _external=True),
         ),
         status.HTTP_200_OK
-     )
+           )
 
 
 ######################################################################
