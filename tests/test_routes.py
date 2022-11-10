@@ -406,6 +406,10 @@ class TestInventory(TestCase):
         # check the data just to be sure
         for record in data:
             self.assertEqual(record["quantity"], test_quantity)
+
+######################################################################
+    # T E S T   H E A L T H 
+###################################################################### 
     def test_health(self):
         """ It should call the health endpoint """
         response = self.client.get("/health")
