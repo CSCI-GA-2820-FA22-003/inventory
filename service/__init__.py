@@ -28,7 +28,7 @@ app.logger.info(70 * "*")
 
 try:
     routes.init_db()  # make our SQLAlchemy tables
-except Exception as error:
+except RuntimeError as error:
     app.logger.critical("%s: Cannot continue", error)
     # gunicorn requires exit code 4 to stop spawning workers when they die
     sys.exit(4)

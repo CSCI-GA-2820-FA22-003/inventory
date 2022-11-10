@@ -50,9 +50,11 @@ class TestInventory(unittest.TestCase):
         inventory_records = Inventory.all()
         self.assertEqual(inventory_records, [])
 
-        record = Inventory(product_id=1, name="monitor", condition=Inventory.Condition.NEW, quantity=10, reorder_quantity=20, restock_level=2)
+        record = Inventory(product_id=1, name="monitor", condition=Inventory.Condition.NEW,
+                            quantity=10, reorder_quantity=20, restock_level=2)
         self.assertTrue(record is not None)
-        self.assertEqual(str(record), "<Inventory %r product_id=[%d] condition=[%s]>" % ("monitor", 1, Inventory.Condition.NEW.value))
+        self.assertEqual(str(record), "<Inventory %r product_id=[%d] condition=[%s]>" % 
+                                    ("monitor", 1, Inventory.Condition.NEW.name))
         self.assertEqual(record.product_id, 1)
         self.assertEqual(record.name, "monitor")
         self.assertEqual(record.condition, Inventory.Condition.NEW)
@@ -113,6 +115,7 @@ class TestInventory(unittest.TestCase):
         record = Inventory()
         self.assertRaises(DataValidationError, record.deserialize, data)
 
+
     def test_deserialize_type_bad_data(self):
         """It should not deserialize inventory with bad data"""
         data = "this is not a dictionary"
@@ -128,6 +131,7 @@ class TestInventory(unittest.TestCase):
             request[field] = "100"
             self.assertRaises(DataValidationError, record.deserialize, request)
             request[field] = temp
+
 
     def test_deserialize_out_of_range_values(self):
         record = InventoryFactory()
@@ -149,7 +153,8 @@ class TestInventory(unittest.TestCase):
         found_record = record.find((record.product_id,record.condition))
         self.assertEqual(found_record.product_id, record.product_id)
         self.assertEqual(found_record.condition, record.condition)
-    
+
+
     def test_delete_a_record(self):
         """Test to check if record is deleted"""
         inventory_record = InventoryFactory()
@@ -158,6 +163,7 @@ class TestInventory(unittest.TestCase):
         # delete the inventory_record and make sure it isn't in the database
         inventory_record.delete()
         self.assertEqual(len(Inventory.all()), 0)
+
 
     def test_update_a_record(self):
         """It should Update a Record"""

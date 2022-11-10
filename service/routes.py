@@ -5,11 +5,19 @@ Describe what your service does here
 """
 
 from flask import jsonify, request, url_for, abort
-from service.models import Inventory
 from .common import status  # HTTP Status Codes
+from service.models import Inventory
+
 
 # Import Flask application
 from . import app
+
+
+@app.route("/health", methods=["GET"])
+def health():
+    """ Health endpoint """
+    app.logger.info("Service active, health endpoint successfully called")
+    return jsonify(status="OK"), status.HTTP_200_OK
 
 
 ######################################################################
@@ -26,7 +34,7 @@ def index():
             paths=url_for("list_inventory_records", _external=True),
         ),
         status.HTTP_200_OK
-     )
+    )
 
 
 ######################################################################
@@ -36,7 +44,6 @@ def index():
 
 def init_db():
     """ Initializes the SQLAlchemy app """
-    global app
     Inventory.init_db(app)
 
 
@@ -63,7 +70,8 @@ def get_inventory_records(product_id):
 def create_inventory_records():
     """
     Creates inventory record
-    This end point will create an inventory record and store it in the database based on user input in the body
+    This end point will create an inventory record and
+    store it in the database based on user input in the body
     """
     app.logger.info("Request to create a record")
     check_content_type("application/json")
@@ -73,13 +81,16 @@ def create_inventory_records():
 
     existing_inventory = Inventory.find((inventory.product_id, inventory.condition))
     if existing_inventory:
-        error = f"Product with id '{inventory.product_id}' and condition '{inventory.condition}' already exists."
+        error = "Product with id \'" + str(inventory.product_id)
+        error += "\'and condition\'" + str(inventory.condition)
+        error += "\'already exists."
         abort(status.HTTP_409_CONFLICT, error)
 
     inventory.create()
     location_url = url_for("get_inventory_records", product_id=inventory.product_id, _external=True)
-
-    app.logger.info(f"Inventory product with ID {inventory.product_id} and condition: {inventory.condition} created.")
+    statement = f"Inventory product with ID {inventory.product_id}"
+    statement += f"and condition: {inventory.condition} created."
+    app.logger.info(statement)
     # return jsonify(inventory.serialize()), status.HTTP_201_CREATED
 
     return jsonify(inventory.serialize()), status.HTTP_201_CREATED, {"Location": location_url}
@@ -178,6 +189,7 @@ def check_content_type(content_type):
 
 
 def find_from_request_json(request_body):
+    '''Fetch relevant items based on product ID and condition'''
     inventory = Inventory()
     inventory.deserialize(request_body)
     return Inventory.find((inventory.product_id, inventory.condition))
