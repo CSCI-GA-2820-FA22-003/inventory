@@ -5,7 +5,7 @@ Describe what your service does here
 """
 
 from flask import jsonify, request, url_for, abort
-from service.models import Inventory
+from .models import Inventory
 from .common import status  # HTTP Status Codes
 
 
