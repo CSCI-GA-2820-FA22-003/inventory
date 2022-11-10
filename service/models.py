@@ -46,14 +46,14 @@ class Inventory(db.Model):
     product_id = db.Column(db.Integer, primary_key=True, autoincrement=False)
     name = db.Column(db.String(63), nullable=False)
     condition = db.Column(db.Enum(Condition), nullable=False,
-    default=Condition.NEW.name, primary_key=True)
+            default=Condition.NEW.name, primary_key=True)
     quantity = db.Column(db.Integer, nullable=False, default=0)
     reorder_quantity = db.Column(db.Integer, nullable=False, default=0)
     restock_level = db.Column(db.Integer, nullable=False, default=0)
     active = db.Column(db.Boolean, nullable=False, default=True)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow,
-    onupdate=datetime.utcnow)
+            onupdate=datetime.utcnow)
 
     def __repr__(self):
         return f"<Inventory {self.name} product_id=[{self.product_id}] condition=[{self.condition}]>"
