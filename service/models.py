@@ -46,18 +46,17 @@ class Inventory(db.Model):
     product_id = db.Column(db.Integer, primary_key=True, autoincrement=False)
     name = db.Column(db.String(63), nullable=False)
     condition = db.Column(db.Enum(Condition), nullable=False,
-                            default=Condition.NEW.name, primary_key=True)
+    default=Condition.NEW.name, primary_key=True)
     quantity = db.Column(db.Integer, nullable=False, default=0)
     reorder_quantity = db.Column(db.Integer, nullable=False, default=0)
     restock_level = db.Column(db.Integer, nullable=False, default=0)
     active = db.Column(db.Boolean, nullable=False, default=True)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow,
-                            onupdate=datetime.utcnow)
+    onupdate=datetime.utcnow)
 
     def __repr__(self):
         return f"<Inventory {self.name} product_id=[{self.product_id}] condition=[{self.condition}]>"
-
 
     def create(self):
         """
@@ -66,7 +65,6 @@ class Inventory(db.Model):
         logger.info("Creating %s", self.name)
         db.session.add(self)
         db.session.commit()
-
 
     def update(self, new_data):
         """
@@ -80,13 +78,11 @@ class Inventory(db.Model):
         logger.info("Saving %s", self.name)
         db.session.commit()
 
-
     def delete(self):
         """ Removes a Inventory from the data store """
         logger.info("Deleting %s", self.name)
         db.session.delete(self)
         db.session.commit()
-
 
     def serialize(self):
         """ Serializes a Inventory into a dictionary """
@@ -98,7 +94,6 @@ class Inventory(db.Model):
             "reorder_quantity": self.reorder_quantity,
             "restock_level": self.restock_level
         }
-
 
     def deserialize(self, data):
         """
@@ -130,7 +125,6 @@ class Inventory(db.Model):
             ) from error
         return self
 
-
     def deserialize_util(self, data):
         """
         Deserializing an Inventory from a dictionary
@@ -158,7 +152,6 @@ class Inventory(db.Model):
                     raise ValueError
                 setattr(self, field, data.get(field))
 
-
     @classmethod
     def init_db(cls, app: Flask):
         """ Initializes the database session """
@@ -169,13 +162,11 @@ class Inventory(db.Model):
         app.app_context().push()
         db.create_all()  # make our sqlalchemy tables
 
-
     @classmethod
     def all(cls):
         """ Returns all of the Inventories in the database """
         logger.info("Processing all Inventories")
         return cls.query.all()
-
 
     @classmethod
     def find(cls, by_params):

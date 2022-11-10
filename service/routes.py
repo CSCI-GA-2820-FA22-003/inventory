@@ -71,7 +71,7 @@ def get_inventory_records(product_id):
 def create_inventory_records():
     """
     Creates inventory record
-    This end point will create an inventory record and 
+    This end point will create an inventory record and
     store it in the database based on user input in the body
     """
     app.logger.info("Request to create a record")
