@@ -44,7 +44,6 @@ def index():
 
 def init_db():
     """ Initializes the SQLAlchemy app """
-    global app
     Inventory.init_db(app)
 
 
