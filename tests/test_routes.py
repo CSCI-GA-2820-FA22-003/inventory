@@ -5,13 +5,10 @@ Test cases can be run with the following:
   nosetests -v --with-spec --spec-color
   coverage report -m
 """
-from cgi import test
 import os
 import logging
-import random
 from unittest import TestCase
-from unittest.mock import MagicMock, patch
-from service import app, routes
+from service import app
 from service.models import Inventory, db, init_db
 from service.common import status  # HTTP Status Codes
 from tests.factories import InventoryFactory
@@ -34,7 +31,7 @@ class TestInventory(TestCase):
         # Set up the test database
         app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URI
         app.logger.setLevel(logging.CRITICAL)
-        #set up the connection with the database
+        # set up the connection with the database
         init_db(app)
         
 
@@ -43,15 +40,18 @@ class TestInventory(TestCase):
         """ This runs once after the entire test suite """
         db.session.close()
 
+
     def setUp(self):
         """ This runs before each test """
         self.client = app.test_client()
         db.session.query(Inventory).delete()  # clean up the last tests
         db.session.commit()
 
+
     def tearDown(self):
         """ This runs after each test """
         db.session.remove()
+
 
     def _create_inventory_records(self, count):
         """Factory method to create inventory records in bulk"""
@@ -117,17 +117,18 @@ class TestInventory(TestCase):
         self.assertEqual(new_record["reorder_quantity"], 0)
         self.assertEqual(new_record["restock_level"], 0)
 
-        #uncomment this once list all products works
-        #Check that the location header was correct
+        # uncomment this once list all products works
+        # Check that the location header was correct
         # response = self.client.get(location)
         # self.assertEqual(response.status_code, status.HTTP_200_OK)
         # new_record = response.get_json()
-        #self.assertEqual(new_record["id"], test_record.id)
+        # self.assertEqual(new_record["id"], test_record.id)
         # self.assertEqual(new_record["name"], test_record.name)
         # self.assertEqual(new_record["condition"], test_record.condition.value)
         # self.assertEqual(new_record["quantity"], test_record.quantity)
         # self.assertEqual(new_record["reorder_quantity"], test_record.reorder_quantity)
         # self.assertEqual(new_record["restock_level"], test_record.restock_level)
+
 
     def test_create_alreadyexists_record(self):
         """Test if a record already exists"""
@@ -155,6 +156,7 @@ class TestInventory(TestCase):
         response = self.client.post(BASE_URL, json=test_record.serialize())
         self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
 
+
     def test_create_record_invalid_content_type(self):
         """Test if the user input is of invalid content type"""
         
@@ -169,13 +171,14 @@ class TestInventory(TestCase):
         
         logging.debug("New Inventory Record: %s", input_data)
         
-        #this will test when a json is passed by cannot be parsed
+        # this will test when a json is passed by cannot be parsed
         response = self.client.post(BASE_URL, data=input_data)
         self.assertEqual(response.status_code, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
 
-        #this will test when a string is passed which has invalid request headers
+        # this will test when a string is passed which has invalid request headers
         response = self.client.post(BASE_URL, data="1")
         self.assertEqual(response.status_code, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
+
 
     def test_delete_inventory_record_success(self):
         """Test to check if it deletes an inventory record"""
@@ -197,7 +200,8 @@ class TestInventory(TestCase):
         # make sure they are deleted
         response = self.client.get(f"{BASE_URL}/{test_inventory_record.product_id}", json=request_body)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-    
+
+
     def test_delete_inventory_record_exception(self):
         """Test to check if code handles non-existent record"""
         SAMPLE_PRODUCT_ID = -999
@@ -208,6 +212,7 @@ class TestInventory(TestCase):
         # specified product shouldnt exist already
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
+
     def test_list_inventory_records(self):
         expected_records = self._create_inventory_records(5)
         expected_response = [record.serialize() for record in expected_records]
@@ -216,6 +221,7 @@ class TestInventory(TestCase):
         data = response.get_json()
         self.assertEqual(len(data), 5)
         self.assertCountEqual(expected_response, data)
+
 
     # Test to update non-existent inventory records
     def test_update_non_existent_inventory_records(self):
@@ -228,7 +234,8 @@ class TestInventory(TestCase):
         data['product_id'] += 1
         response = self.client.put("{}/{}/{}".format(BASE_URL, data['product_id'], data['condition']), json=data)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-    
+
+
     # Test to update existing inventory records with random valid values
     def test_update_inventory_records(self):
         """Test for successful update of an inventory record"""
@@ -244,6 +251,7 @@ class TestInventory(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         updated_record = response.get_json()
         self.assertEqual(data, updated_record)
+
 
     # Test to attempt update with invalid values
     def test_attempt_incorrect_value_update(self):
@@ -265,6 +273,7 @@ class TestInventory(TestCase):
             self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
             data[field] = temp
 
+
     # Test update for non-existent records
     def update_non_existent_record(self):
         """Update a record that does not exist in the database"""
@@ -278,7 +287,8 @@ class TestInventory(TestCase):
         data['product_id'] = None
         response = self.client.put(f"{BASE_URL}/{data['product_id']}/", json=data)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-           
+
+
     def test_read_records(self):
         record = self._create_inventory_records(1)[0]
         record.name = None
@@ -292,6 +302,7 @@ class TestInventory(TestCase):
         self.assertEqual(data["product_id"], record.product_id)
         self.assertEqual(data["condition"], record.condition.value)
 
+
     def test_read_non_existent_records(self):
         record = self._create_inventory_records(1)[0]
         record.product_id = record.product_id + 1
@@ -303,21 +314,22 @@ class TestInventory(TestCase):
         response = self.client.get(f"{BASE_URL}/{record.product_id}", json= record.serialize())
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
+
     def test_method_not_allowed(self):
         """Test if API is called with the wrong method type"""
         test_record = InventoryFactory()
-        #calling a post with a product id
+        # calling a post with a product id
 
         logging.debug("Test Inventory Records with method not allowed post request: %s", test_record.serialize())
         response = self.client.post(f"{BASE_URL}/{test_record.product_id}", json=test_record.serialize())
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
         
-        #calling a delete method without product id
+        # calling a delete method without product id
         logging.debug("Test Inventory Records with method not allowed delete request: %s", test_record.serialize())
         response = self.client.delete(f"{BASE_URL}", json=test_record.serialize())
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
-        #calling an update method without product id
+        # calling an update method without product id
         logging.debug("Test Inventory Records with method not allowed update request: %s", test_record.serialize())
         response = self.client.put(f"{BASE_URL}", json=test_record.serialize())
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
