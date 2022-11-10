@@ -13,7 +13,7 @@ from service.models import Inventory
 from . import app
 
 
-@app.route("/health")
+@app.route("/health", methods=["GET"])
 def health():
     """ Health endpoint """
     app.logger.info("Service active, health endpoint successfully called")
