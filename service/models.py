@@ -173,13 +173,44 @@ class Inventory(db.Model):
         logger.info("Processing lookup for id %s and condition %s ...", by_id, by_condition)
         return cls.query.get((by_id, by_condition))
 
-    # uncomment for sprint 2
-    # @classmethod
-    # def find_by_name(cls, name):
-    #     """Returns all Inventories with the given name
 
-    #     Args:
-    #         name (string): the name of the Inventories you want to match
-    #     """
-    #     logger.info("Processing name query for %s ...", name)
-    #     return cls.query.filter(cls.name == name)
+    @classmethod
+    def find_by_name(cls, name):
+        """Returns all Inventories with the given name
+
+        Args:
+            name (string): the name of the Inventories you want to match
+        """
+        logger.info("Processing name query for %s ...", name)
+        return cls.query.filter(cls.name == name)
+    
+    @classmethod
+    def find_by_condition(cls, condition):
+        """Returns all Inventories with the given condition
+
+        Args:
+            condition (string): the condition of the Inventories you want to match
+        """
+        logger.info("Processing condition query for %s ...", condition)
+        return cls.query.filter(cls.condition == condition)
+    
+    @classmethod
+    def find_by_quantity(cls, quantity):
+        """Returns all Inventories with the given quantity
+
+        Args:
+            quantity (string): the quantity of the Inventories you want to match
+        """
+        logger.info("Processing quantity query for %s ...", quantity)
+        return cls.query.filter(cls.quantity == quantity)
+    
+    @classmethod
+    def find_by_active(cls, active):
+        """Returns all Inventories by their availability
+            :param available: True for Inventories that are available
+            :type available: str
+            :return: a collection of Inventories that are available
+            :rtype: list
+        """
+        logger.info("Processing quantity query for %s ...", active)
+        return cls.query.filter(cls.active == active)
