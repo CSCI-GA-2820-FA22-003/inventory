@@ -56,7 +56,7 @@ class Inventory(db.Model):
                            onupdate=datetime.utcnow)
 
     def __repr__(self):
-        return f"<Inventory {self.name} product_id=[{self.product_id}] condition=[{self.condition}]>"
+        return f"<Inventory '{self.name}' product_id=[{self.product_id}] condition=[{self.condition.name}]>"
 
     def create(self):
         """
