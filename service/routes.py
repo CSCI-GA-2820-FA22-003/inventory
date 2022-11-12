@@ -181,13 +181,8 @@ def update_inventory_records(product_id, condition):
 @app.route("/inventory/checkout/<int:product_id>/<condition>", methods=["PUT"])
 def checkout_quantity(product_id, condition):
     """Reduces quantity from inventory of a particular item based on the amount specified by user"""
-    app.logger.info("Reduce quantity of item based on user requirement")
     data = request.get_json()
-    app.logger.info(type(condition))
-    # condition = Inventory.Condition(data['condition']).name
     condition_enum = Inventory.Condition(condition).name
-    app.logger.info(type(condition))
-    app.logger.info(condition)
     ordered_quantity = data['ordered_quantity']
     existing_record = Inventory.find((product_id, condition_enum))
     app.logger.info(existing_record)
