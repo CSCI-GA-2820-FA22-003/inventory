@@ -168,25 +168,15 @@ List all inventory records with active equal to the given value in the query str
 
 #### `GET /inventory?quantity=<quantity>&operator=<operator>`
 
-List all inventory records with quantiy and operator in the query string. 
+List all inventory records with quantity and operator in the query string. 
 <br/> <br/> If you pass operator ```>``` then all inventory records having a quantity greater than quantity passed in the query string will be returned. <br/> <br/> **Note**: Possible operators are ```>```, ```<```,```>=```,```<=```,```=```. 
 <br/> Any other operators will return a ```400_Bad_Request```
 
+#### `GET /inventory?<multiple_parameters_in_query_string>`
 
-#### Response
-```
-[
-    {
-	"condition": "return",
-	"name": "laptop",
-	"product_id": 2,
-	"quantity": 20,
-	"reorder_quantity": 15,
-	"restock_level": 3
-    }
-]
-```
-The list of inventory records is returned in the response.
+List all inventory records that match the parameters passed in the query string.
+<br/> Eg: ```GET /inventory?name="laptop"&active=NEW```. This would return all those inventory records with name as laptop and condition=NEW
+
 
 #### `PUT /inventory/{product_id}`
 
