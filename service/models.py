@@ -148,9 +148,9 @@ class Inventory(db.Model):
             else:
                 raise TypeError
 
-        if data.get("active"):
+        if data.get("active") is not None:
             if isinstance(data.get("active"), bool):
-                setattr(self, "active", data.get("active"))
+                self.active = data.get("active")
             else:
                 raise TypeError
 
@@ -185,13 +185,29 @@ class Inventory(db.Model):
         logger.info("Processing lookup for id %s and condition %s ...", by_id, by_condition)
         return cls.query.get((by_id, by_condition))
 
-    # uncomment for sprint 2
-    # @classmethod
-    # def find_by_name(cls, name):
-    #     """Returns all Inventories with the given name
-
-    #     Args:
-    #         name (string): the name of the Inventories you want to match
-    #     """
-    #     logger.info("Processing name query for %s ...", name)
-    #     return cls.query.filter(cls.name == name)
+    @classmethod
+    def find_by_general_filter(cls, by_filters):
+        """Returns all Inventories by all the filters
+            :param by_filters: contains all the filter parameters and their values
+            :type available: dictionary
+            :return: a collection of Inventories that satisfy all the filter parameters
+            :rtype: list
+        """
+        __query = db.session.query(cls)
+        for attr,values in by_filters.items():
+            if attr=="quantity":
+                (value,oper)=values
+                dict_oper={"=":getattr(cls,attr)==value, "<=":getattr(cls,attr)<=value,
+                ">=":getattr(cls,attr)>=value, "<":getattr(cls,attr)<value,
+                ">":getattr(cls,attr)>value}
+                try:
+                    filt = dict_oper[oper]
+                    __query = __query.filter(filt)
+                except KeyError:
+                    logger.info("Invalid operator %s ...", oper)
+                    return [-1]
+            else:
+                __query = __query.filter(getattr(cls,attr)==values)
+            # now we can run the query
+        results = __query.all()
+        return results
