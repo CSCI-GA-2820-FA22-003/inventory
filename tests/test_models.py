@@ -66,7 +66,6 @@ class TestInventory(unittest.TestCase):
         record = Inventory(product_id=1, name="monitor", condition=Inventory.Condition.NEW,
                             quantity=10, reorder_quantity=20, restock_level=2, active = True)
         actual_output = record.serialize()
-        logging.debug(actual_output)
         expected_output = {
             "product_id": 1,
             "name": "monitor",

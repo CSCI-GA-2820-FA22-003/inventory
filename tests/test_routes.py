@@ -601,12 +601,3 @@ class TestInventory(TestCase):
                                    f"/{data['condition']}",
                                    json=request_dict)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-        
-
-    
-        
-
-
-
-
-        

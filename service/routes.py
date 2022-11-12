@@ -99,8 +99,8 @@ def create_inventory_records():
 def list_inventory_records():
     """Returns all of the Inventory records"""
     records = []
-    feature_flag=False
-    req={}
+    feature_flag = False
+    req = {}
 
     name = request.args.get("name")
     condition = request.args.get("condition")
@@ -110,29 +110,29 @@ def list_inventory_records():
 
     if name:
         app.logger.info("Filtering by name: %s", name)
-        feature_flag=True
-        req["name"]=name
+        feature_flag = True
+        req["name"] = name
     if condition:
         app.logger.info("Filtering by condition:%s", condition)
         condition = Inventory.Condition(condition)
-        feature_flag=True
-        req["condition"]=condition
+        feature_flag = True
+        req["condition"] = condition
     if quantity:
         app.logger.info("Filtering by quantity: %s", quantity)
-        feature_flag=True
-        req["quantity"]=(quantity,operator)
+        feature_flag = True
+        req["quantity"] = (quantity, operator)
     if active:
         app.logger.info("Filtering by available: %s", active)
-        feature_flag=True
-        req["active"]=active
+        feature_flag = True
+        req["active"] = active
 
     if feature_flag:
-        records=Inventory.find_by_general_filter(req)
+        records = Inventory.find_by_general_filter(req)
     else:
         app.logger.info("Request list of all inventory records")
         records = Inventory.all()
 
-    if records=="Invalid":
+    if records == "Invalid":
         abort(status.HTTP_400_BAD_REQUEST)
     elif not records:
         abort(status.HTTP_404_NOT_FOUND, "No Product Found")
@@ -142,7 +142,6 @@ def list_inventory_records():
     return jsonify(results), status.HTTP_200_OK
 
 
-
 @app.route("/inventory/<product_id>/<condition>", methods=["DELETE"])
 def delete_inventory_record(product_id, condition):
     """Deletes inventory record
@@ -150,7 +149,7 @@ def delete_inventory_record(product_id, condition):
     @param: product_id is the id of the record that is to be deleted
     """
     app.logger.info(f"Request to delete inventory record with id: {product_id} with condition: {condition}")
-    inventory = Inventory.find((product_id, condition ))
+    inventory = Inventory.find((product_id, condition))
     app.logger.info(f"For the provided id, Inventory Record returned is: {inventory}")
     if not inventory:
         return "", status.HTTP_204_NO_CONTENT
@@ -185,7 +184,6 @@ def checkout_quantity(product_id, condition):
     condition_enum = Inventory.Condition(condition).name
     ordered_quantity = data['ordered_quantity']
     existing_record = Inventory.find((product_id, condition_enum))
-    app.logger.info(existing_record)
 
     if not existing_record:
         abort(status.HTTP_404_NOT_FOUND, f"Product with id '{product_id}' was not found.")
