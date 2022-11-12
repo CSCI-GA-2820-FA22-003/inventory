@@ -183,42 +183,28 @@ class Inventory(db.Model):
         return cls.query.get((by_id, by_condition))
 
     @classmethod
-    def find_by_name(cls, name):
-        """Returns all Inventories with the given name
-
-        Args:
-            name (string): the name of the Inventories you want to match
-        """
-        logger.info("Processing name query for %s ...", name)
-        return cls.query.filter(cls.name == name)
-
-    @classmethod
-    def find_by_condition(cls, condition):
-        """Returns all Inventories with the given condition
-
-        Args:
-            condition (string): the condition of the Inventories you want to match
-        """
-        logger.info("Processing condition query for %s ...", condition)
-        return cls.query.filter(cls.condition == condition)
-
-    @classmethod
-    def find_by_quantity(cls, quantity):
-        """Returns all Inventories with the given quantity
-
-        Args:
-            quantity (string): the quantity of the Inventories you want to match
-        """
-        logger.info("Processing quantity query for %s ...", quantity)
-        return cls.query.filter(cls.quantity == quantity)
-
-    @classmethod
-    def find_by_active(cls, active):
-        """Returns all Inventories by their availability
-            :param available: True for Inventories that are available
-            :type available: str
-            :return: a collection of Inventories that are available
+    def find_by_general_filter(cls, by_filters):
+        """Returns all Inventories by all the filters
+            :param by_filters: contains all the filter parameters and their values
+            :type available: dictionary
+            :return: a collection of Inventories that satisfy all the filter parameters
             :rtype: list
         """
-        logger.info("Processing quantity query for %s ...", active)
-        return cls.query.filter(cls.active == active)
+        __query = db.session.query(cls)
+        for attr,values in by_filters.items():
+            if attr=="quantity":
+                (value,oper)=values
+                dict_oper={"=":getattr(cls,attr)==value, "<=":getattr(cls,attr)<=value,
+                ">=":getattr(cls,attr)>=value, "<":getattr(cls,attr)<value,
+                ">":getattr(cls,attr)>value}
+                try:
+                    filt = dict_oper[oper]
+                    __query = __query.filter(filt)
+                except KeyError:
+                    logger.info("Invalid operator %s ...", oper)
+                    return None
+            else:
+                __query = __query.filter(getattr(cls,attr)==values)
+            # now we can run the query
+        results = __query.all()
+        return results

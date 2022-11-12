@@ -344,7 +344,7 @@ class TestInventory(TestCase):
 ######################################################################
 
     def test_query_inventories_by_name(self):
-        """It should Query Inventories by Name"""
+        """It should Query Inventories by Name Individually"""
         records = self._create_inventory_records(10)
         test_name = records[0].name
         name_list = [record for record in records if record.name == test_name]
@@ -354,11 +354,11 @@ class TestInventory(TestCase):
         data = resp.get_json()
         self.assertEqual(len(data), len(name_list))
         # check the data just to be sure
-        for pet in data:
-            self.assertEqual(pet["name"], test_name)
+        for record in data:
+            self.assertEqual(record["name"], test_name)
 
     def test_query_inventories_by_condition(self):
-        """It should Query Inventories by Condition"""
+        """It should Query Inventories by Condition Individually"""
         records = self._create_inventory_records(1)
         test_condition = records[0].condition
         condition_list = [record for record in records if record.condition.name == test_condition.name]
@@ -376,14 +376,14 @@ class TestInventory(TestCase):
             self.assertEqual(record["condition"], test_condition.value)
 
     def test_query_inventories_by_active(self):
-        """It should Query Pets by Availability"""
+        """It should Query Inventories by Availability Individually"""
         records = self._create_inventory_records(10)
         test_active = records[0].active
         active_list = [record for record in records if record.active == test_active]
         logging.info(
             "Active=%s: %d = %s", test_active, len(active_list), active_list
         )
-        resp = self.client.get(BASE_URL, query_string=f"active={str(test_active)}")
+        resp = self.client.get(BASE_URL, query_string=f"active={test_active}")
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         data = resp.get_json()
         self.assertEqual(len(data), len(active_list))
@@ -391,21 +391,138 @@ class TestInventory(TestCase):
         for record in data:
             self.assertEqual(record["active"], test_active)
 
-    def test_query_pets_by_quantity(self):
-        """It should Query Inventories by Quantity"""
+    def test_query_inventories_by_equal_quantity(self):
+        """It should Query Inventories by Equal Quantity Individually"""
         records = self._create_inventory_records(10)
         test_quantity = records[0].quantity
         quantity_list = [record for record in records if record.quantity == test_quantity]
+        test_operator="="
         logging.info(
             "Quantity=%s: %d = %s", test_quantity, len(quantity_list), quantity_list
         )
-        resp = self.client.get(BASE_URL, query_string=f"quantity={str(test_quantity)}")
+        resp = self.client.get(BASE_URL, query_string=f"quantity={str(test_quantity)}&operator={test_operator}")
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         data = resp.get_json()
         self.assertEqual(len(data), len(quantity_list))
         # check the data just to be sure
         for record in data:
             self.assertEqual(record["quantity"], test_quantity)
+
+    def test_query_inventories_by_invalid_operator_quantity(self):
+        """It should Query Inventories by Invalid operator Quantity Individually"""
+        records = self._create_inventory_records(10)
+        test_quantity = records[0].quantity
+        quantity_list = [record for record in records if record.quantity == test_quantity]
+        test_operator="=="
+        logging.info(
+            "Quantity=%s: %d = %s", test_quantity, len(quantity_list), quantity_list
+        )
+        resp = self.client.get(BASE_URL, query_string=f"quantity={str(test_quantity)}&operator={test_operator}")
+        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_query_inventories_by_less_than_quantity(self):
+        """It should Query Inventories by Less Than Quantity Individually"""
+        records = self._create_inventory_records(10)
+        test_quantity = records[0].quantity
+        quantity_list = [record for record in records if record.quantity < test_quantity]
+        test_operator="<"
+        logging.info(
+            "Quantity=%s: %d = %s", test_quantity, len(quantity_list), quantity_list
+        )
+        resp = self.client.get(BASE_URL, query_string=f"quantity={str(test_quantity)}&operator={test_operator}")
+        if(len(quantity_list)>0):
+            self.assertEqual(resp.status_code, status.HTTP_200_OK)
+            data = resp.get_json()
+            self.assertEqual(len(data), len(quantity_list))
+            # check the data just to be sure
+            for record in data:
+                self.assertLess(record["quantity"], test_quantity)
+        else:
+            self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_query_inventories_by_less_than_equal_quantity(self):
+        """It should Query Inventories by Less Than Equal to Quantity Individually"""
+        records = self._create_inventory_records(10)
+        test_quantity = records[0].quantity
+        quantity_list = [record for record in records if record.quantity <= test_quantity]
+        test_operator="<="
+        logging.info(
+            "Quantity=%s: %d = %s", test_quantity, len(quantity_list), quantity_list
+        )
+        resp = self.client.get(BASE_URL, query_string=f"quantity={str(test_quantity)}&operator={test_operator}")
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        data = resp.get_json()
+        self.assertEqual(len(data), len(quantity_list))
+        # check the data just to be sure
+        for record in data:
+            self.assertLessEqual(record["quantity"], test_quantity)
+    
+    def test_query_inventories_by_greater_than_equal_quantity(self):
+        """It should Query Inventories by Greater Than Equal to Quantity Individually"""
+        records = self._create_inventory_records(10)
+        test_quantity = records[0].quantity
+        quantity_list = [record for record in records if record.quantity >= test_quantity]
+        test_operator=">="
+        logging.info(
+            "Quantity=%s: %d = %s", test_quantity, len(quantity_list), quantity_list
+        )
+        resp = self.client.get(BASE_URL, query_string=f"quantity={str(test_quantity)}&operator={test_operator}")
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        data = resp.get_json()
+        self.assertEqual(len(data), len(quantity_list))
+        # check the data just to be sure
+        for record in data:
+            self.assertGreaterEqual(record["quantity"], test_quantity)
+
+    def test_query_inventories_by_greater_than_quantity(self):
+        """It should Query Inventories by Greater Than Quantity Individually"""
+        records = self._create_inventory_records(10)
+        test_quantity = records[0].quantity
+        quantity_list = [record for record in records if record.quantity > test_quantity]
+        test_operator=">"
+        logging.info(
+            "Quantity=%s: %d = %s", test_quantity, len(quantity_list), quantity_list
+        )
+        resp = self.client.get(BASE_URL, query_string=f"quantity={str(test_quantity)}&operator={test_operator}")
+        if(len(quantity_list)>0):
+            self.assertEqual(resp.status_code, status.HTTP_200_OK)
+            data = resp.get_json()
+            self.assertEqual(len(data), len(quantity_list))
+            # check the data just to be sure
+            for record in data:
+                self.assertGreater(record["quantity"], test_quantity)
+        else:
+            self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_query_inventories_by_combinations(self):
+        """It should Query Inventories by combined filters"""
+        records = self._create_inventory_records(10)
+        ######## Filtering by name and conditions
+        test_name = records[0].name
+        test_condition=records[0].condition
+        lists = [record for record in records if record.name == test_name and record.condition.name==test_condition.name]
+        logging.info("Name=%s and Condition=%s: %d = %s", test_name, test_condition,len(lists), lists)
+        resp = self.client.get(BASE_URL, query_string=f"name={quote_plus(test_name)}&condition={quote_plus(test_condition.value)}")
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        data = resp.get_json()
+        self.assertEqual(len(data), len(lists))
+        # check the data just to be sure
+        for record in data:
+            self.assertEqual(record["name"], test_name)
+            self.assertEqual(record["condition"], test_condition.value)
+        ######## Filtering by condition and available status
+        test_condition = records[0].condition
+        test_active=records[0].active
+        lists = [record for record in records if record.condition.name == test_condition.name and record.active==test_active]
+        logging.info("Condition=%s and Active=%s: %d = %s", test_condition, test_active,len(lists), lists)
+        resp = self.client.get(BASE_URL, query_string=f"condition={quote_plus(test_condition.value)}&active={quote_plus(str(test_active))}")
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        data = resp.get_json()
+        self.assertEqual(len(data), len(lists))
+        # check the data just to be sure
+        for record in data:
+            self.assertEqual(record["condition"], test_condition.value)
+            self.assertEqual(record["active"], test_active)
 
 ######################################################################
     # T E S T   H E A L T H 

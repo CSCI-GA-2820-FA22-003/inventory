@@ -5,9 +5,8 @@ Describe what your service does here
 """
 
 from flask import jsonify, request, url_for, abort
-from .common import status  # HTTP Status Codes
 from service.models import Inventory
-
+from .common import status  # HTTP Status Codes
 
 # Import Flask application
 from . import app
@@ -100,28 +99,42 @@ def create_inventory_records():
 def list_inventory_records():
     """Returns all of the Inventory records"""
     records = []
+    feature_flag=False
+    req={}
+
     name = request.args.get("name")
     condition = request.args.get("condition")
     quantity = request.args.get("quantity")
+    operator = request.args.get("operator")
     active = request.args.get("active")
 
     if name:
         app.logger.info("Filtering by name: %s", name)
-        records = Inventory.find_by_name(name)
-    elif condition:
+        feature_flag=True
+        req["name"]=name
+    if condition:
         app.logger.info("Filtering by condition:%s", condition)
         condition = Inventory.Condition(condition)
-        records = Inventory.find_by_condition(condition)
-    elif quantity:
+        feature_flag=True
+        req["condition"]=condition
+    if quantity:
         app.logger.info("Filtering by quantity: %s", quantity)
-        records = Inventory.find_by_quantity(quantity)
-    elif active:
+        feature_flag=True
+        req["quantity"]=(quantity,operator)
+
+    if active:
         app.logger.info("Filtering by available: %s", active)
-        is_active = active.lower() in ["yes", "y", "true", "t", "1"]
-        records = Inventory.find_by_active(is_active)
+        feature_flag=True
+        req["active"]=active
+
+    if feature_flag:
+        records=Inventory.find_by_general_filter(req)
     else:
         app.logger.info("Request list of all inventory records")
         records = Inventory.all()
+
+    if not records:
+        abort(status.HTTP_404_NOT_FOUND, "Product was not found.")
 
     results = [record.serialize() for record in records]
     app.logger.info("Returning %d inventory records", len(results))
