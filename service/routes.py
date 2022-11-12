@@ -5,9 +5,8 @@ Describe what your service does here
 """
 
 from flask import jsonify, request, url_for, abort
-from .models import Inventory
+from service.models import Inventory
 from .common import status  # HTTP Status Codes
-
 
 # Import Flask application
 from . import app
@@ -78,6 +77,7 @@ def create_inventory_records():
     inventory = Inventory()
     data = request.get_json()
     inventory.deserialize(data)
+
     existing_inventory = Inventory.find((inventory.product_id, inventory.condition))
     if existing_inventory:
         error = "Product with id \'" + str(inventory.product_id)
@@ -91,14 +91,52 @@ def create_inventory_records():
     statement += f"and condition: {inventory.condition} created."
     app.logger.info(statement)
     # return jsonify(inventory.serialize()), status.HTTP_201_CREATED
+
     return jsonify(inventory.serialize()), status.HTTP_201_CREATED, {"Location": location_url}
 
 
 @app.route("/inventory", methods=["GET"])
 def list_inventory_records():
     """Returns all of the Inventory records"""
-    app.logger.info("Request list of inventory records")
-    records = Inventory.all()
+    records = []
+    feature_flag=False
+    req={}
+
+    name = request.args.get("name")
+    condition = request.args.get("condition")
+    quantity = request.args.get("quantity")
+    operator = request.args.get("operator")
+    active = request.args.get("active")
+
+    if name:
+        app.logger.info("Filtering by name: %s", name)
+        feature_flag=True
+        req["name"]=name
+    if condition:
+        app.logger.info("Filtering by condition:%s", condition)
+        condition = Inventory.Condition(condition)
+        feature_flag=True
+        req["condition"]=condition
+    if quantity:
+        app.logger.info("Filtering by quantity: %s", quantity)
+        feature_flag=True
+        req["quantity"]=(quantity,operator)
+    if active:
+        app.logger.info("Filtering by available: %s", active)
+        feature_flag=True
+        req["active"]=active
+
+    if feature_flag:
+        records=Inventory.find_by_general_filter(req)
+    else:
+        app.logger.info("Request list of all inventory records")
+        records = Inventory.all()
+
+    if records=="Invalid":
+        abort(status.HTTP_400_BAD_REQUEST)
+    elif not records:
+        abort(status.HTTP_404_NOT_FOUND, "No Product Found")
+
     results = [record.serialize() for record in records]
     app.logger.info("Returning %d inventory records", len(results))
     return jsonify(results), status.HTTP_200_OK
