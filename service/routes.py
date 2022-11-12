@@ -47,7 +47,7 @@ def init_db():
     Inventory.init_db(app)
 
 
-@app.route("/inventory/<product_id>", methods=["GET"])
+@app.route("/inventory/<int:product_id>", methods=["GET"])
 def get_inventory_records(product_id):
     """
     Retrieve a single record
@@ -104,7 +104,7 @@ def list_inventory_records():
     return jsonify(results), status.HTTP_200_OK
 
 
-@app.route("/inventory/<product_id>", methods=["DELETE"])
+@app.route("/inventory/<int:product_id>", methods=["DELETE"])
 def delete_inventory_record(product_id):
     """Deletes inventory record
 
@@ -137,6 +137,40 @@ def update_inventory_records(product_id):
         abort(status.HTTP_404_NOT_FOUND, f"Product with id '{product_id}' was not found.")
 
     # Apply update to database & return as JSON
+    existing_record.update(new_record)
+    return jsonify(existing_record.serialize()), status.HTTP_200_OK
+
+
+@app.route("/inventory/checkout/<int:product_id>", methods=["PUT"])
+def checkout_quantity(product_id):
+    """Reduces quantity from inventory of a particular item based on the amount specified by user"""
+    app.logger.info("Reduce quantity of item based on user requirement")
+    data = request.get_json()
+
+    condition = Inventory.Condition(data['condition']).name
+    app.logger.info(type(condition))
+    app.logger.info(condition)
+    ordered_quantity = data['ordered_quantity']
+    existing_record = Inventory.find((product_id, condition))
+    app.logger.info(existing_record)
+
+    if not existing_record:
+        abort(status.HTTP_404_NOT_FOUND, f"Product with id '{product_id}' was not found.")
+
+    new_record = Inventory()
+    if ordered_quantity > existing_record.quantity:
+        del new_record
+        abort(status.HTTP_405_METHOD_NOT_ALLOWED, f"Quantity specified is more than quantity of"
+                                                  f" item with Product ID '{product_id}'"
+                                                  "currently in database.")
+    elif ordered_quantity == existing_record.quantity:
+        new_record.quantity = 0
+        new_record.active = False
+        new_record.checkout_flag = True
+    else:
+        new_record.quantity = existing_record.quantity - ordered_quantity
+        app.logger.info("Executed till here")
+
     existing_record.update(new_record)
     return jsonify(existing_record.serialize()), status.HTTP_200_OK
 

@@ -9,7 +9,6 @@ import enum
 from flask_sqlalchemy import SQLAlchemy
 from flask import Flask
 
-
 logger = logging.getLogger("flask.app")
 
 # Create the SQLAlchemy object to be initialized later in init_db()
@@ -73,10 +72,13 @@ class Inventory(db.Model):
         Updates a Inventory to the database
         """
         self.name = new_data.name or self.name
-        self.quantity = new_data.quantity or self.quantity
+        if hasattr(new_data, 'quantity'):
+            self.quantity = new_data.quantity
         self.reorder_quantity = new_data.reorder_quantity or self.reorder_quantity
         self.restock_level = new_data.restock_level or self.restock_level
         self.updated_at = datetime.utcnow()
+        if new_data.active is False:
+            self.active = new_data.active
         logger.info("Saving %s", self.name)
         db.session.commit()
 
@@ -94,7 +96,8 @@ class Inventory(db.Model):
             "condition": self.condition.value,
             "quantity": self.quantity,
             "reorder_quantity": self.reorder_quantity,
-            "restock_level": self.restock_level
+            "restock_level": self.restock_level,
+            "active": self.active
         }
 
     def deserialize(self, data):
@@ -141,6 +144,12 @@ class Inventory(db.Model):
         if data.get("name"):
             if isinstance(data.get("name"), str):
                 self.name = data.get("name")
+            else:
+                raise TypeError
+
+        if data.get("active"):
+            if isinstance(data.get("active"), bool):
+                setattr(self, "active", data.get("active"))
             else:
                 raise TypeError
 
