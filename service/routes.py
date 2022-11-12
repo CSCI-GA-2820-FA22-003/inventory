@@ -121,7 +121,6 @@ def list_inventory_records():
         app.logger.info("Filtering by quantity: %s", quantity)
         feature_flag=True
         req["quantity"]=(quantity,operator)
-
     if active:
         app.logger.info("Filtering by available: %s", active)
         feature_flag=True
@@ -133,7 +132,7 @@ def list_inventory_records():
         app.logger.info("Request list of all inventory records")
         records = Inventory.all()
 
-    if records[0]==-1:
+    if records=="Invalid":
         abort(status.HTTP_400_BAD_REQUEST)
     elif not records:
         abort(status.HTTP_404_NOT_FOUND, "No Product Found")

@@ -205,7 +205,7 @@ class Inventory(db.Model):
                     __query = __query.filter(filt)
                 except KeyError:
                     logger.info("Invalid operator %s ...", oper)
-                    return [-1]
+                    return "Invalid"
             else:
                 __query = __query.filter(getattr(cls,attr)==values)
             # now we can run the query
