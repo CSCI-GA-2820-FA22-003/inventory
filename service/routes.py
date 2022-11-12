@@ -142,22 +142,19 @@ def list_inventory_records():
     return jsonify(results), status.HTTP_200_OK
 
 
-@app.route("/inventory/<int:product_id>", methods=["DELETE"])
-def delete_inventory_record(product_id):
+
+@app.route("/inventory/<product_id>/<condition>", methods=["DELETE"])
+def delete_inventory_record(product_id, condition):
     """Deletes inventory record
 
     @param: product_id is the id of the record that is to be deleted
     """
-    app.logger.info("Request to delete inventory record with id: %s", product_id)
-    inventory = find_from_request_json(request.get_json())
+    app.logger.info(f"Request to delete inventory record with id: {product_id} with condition: {condition}")
+    inventory = Inventory.find((product_id, condition ))
     app.logger.info(f"For the provided id, Inventory Record returned is: {inventory}")
-
-    if inventory:
-        inventory.delete()
-    else:
-        abort(status.HTTP_404_NOT_FOUND, f"Product with id '{product_id}' was not found.")
-
-    app.logger.info(f"Inventory record with ID {product_id} delete complete.")
+    if not inventory:
+        return "", status.HTTP_204_NO_CONTENT
+    inventory.delete()
     return "", status.HTTP_204_NO_CONTENT
 
 
