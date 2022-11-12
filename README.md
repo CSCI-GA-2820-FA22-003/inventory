@@ -207,30 +207,13 @@ Find an inventory record by `product_id` and `condition`. The fields `quantity`,
 ```
 Update the fields of existing record with the passed values. Return the updated record in the response.
 
-#### `DELETE /inventory/{product_id}`
+#### `DELETE /inventory/{product_id}/{condition}`
 
 Delete inventory record.
 
-#### Request
-```
-{
-    "product_id": 2,
-    "condition": "new"
-}
-```
-
 #### Response
-```
-{
-    "product_id": 2,
-    "condition": "new",
-    "name": "laptop",
-    "quantity": 20,
-    "reorder_quantity": 15,
-    "restock_level": 3
-}
-```
-The record that matches the keys `product_id` and `condition` is returned in the response.
+
+The record that matches the keys `product_id` and `condition` returns `HTTP_204_NO_CONTENT`.
 
 ## :wrench: Running Tests
 
