@@ -223,8 +223,8 @@ class TestInventory(TestCase):
         self.assertCountEqual(expected_response, data)
 
 
-    # Test to update non-existent inventory records
     def test_update_non_existent_inventory_records(self):
+        """Test to update non-existent inventory records"""
         test_record = InventoryFactory()
         response = self.client.post(BASE_URL, json=test_record.serialize())
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -232,13 +232,13 @@ class TestInventory(TestCase):
         data = response.get_json()
         # increment product_id so that query searches for a different product_id
         data['product_id'] += 1
-        response = self.client.put("{}/{}/{}".format(BASE_URL, data['product_id'], data['condition']), json=data)
+        response = self.client.put(f"{BASE_URL}/{data['product_id']}/{data['condition']}"
+                                   , json=data)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
 
-    # Test to update existing inventory records with random valid values
     def test_update_inventory_records(self):
-        """Test for successful update of an inventory record"""
+        """Test for successful update of an inventory record with valid values"""
         # Create a test record
         test_record = self._create_inventory_records(1)[0]
         data = test_record.serialize()
@@ -247,13 +247,12 @@ class TestInventory(TestCase):
         data["restock_level"] += 1
         data["name"] = "some_name"
         # Make call to update record
-        response = self.client.put(f"{BASE_URL}/{data['product_id']}", json=data)
+        response = self.client.put(f"{BASE_URL}/{data['product_id']}/{data['condition']}", json=data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         updated_record = response.get_json()
         self.assertEqual(data, updated_record)
 
 
-    # Test to attempt update with invalid values
     def test_attempt_incorrect_value_update(self):
         """Test to check if a record gets updated with an invalid value for a particular field"""
         test_record = self._create_inventory_records(1)[0]
@@ -262,14 +261,16 @@ class TestInventory(TestCase):
         for field in ["quantity", "reorder_quantity", "restock_level"]:
             temp = data[field]
             data[field] = '100'
-            response = self.client.put(f"{BASE_URL}/{data['product_id']}", json=data)
+            response = self.client.put(f"{BASE_URL}/{data['product_id']}/{data['condition']}",
+                                       json=data)
             self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
             data[field] = temp
 
         for field in ["quantity", "reorder_quantity", "restock_level"]:
             temp = data[field]
             data[field] = -20
-            response = self.client.put(f"{BASE_URL}/{data['product_id']}", json=data)
+            response = self.client.put(f"{BASE_URL}/{data['product_id']}/{data['condition']}",
+                                       json=data)
             self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
             data[field] = temp
 
@@ -284,7 +285,8 @@ class TestInventory(TestCase):
         # Get record as JSON
         data = response.get_json()
         data['product_id'] += 100
-        response = self.client.put(f"{BASE_URL}/{data['product_id']}/", json=data)
+        response = self.client.put(f"{BASE_URL}/{data['product_id']}/{data['condition']}",
+                                   json=data)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
 
@@ -352,14 +354,14 @@ class TestInventory(TestCase):
         # Get record as JSON
         data = response.get_json()
         request_dict = dict()
-        request_dict['product_id'] = data['product_id']
-        request_dict['condition'] = data['condition']
         request_dict['ordered_quantity'] = data['quantity'] - 1
-        response = self.client.put(f"{BASE_URL}/checkout/{request_dict['product_id']}",
+        response = self.client.put(f"{BASE_URL}/checkout/{data['product_id']}"
+                                   f"/{data['condition']}",
                                    json=request_dict)
         response_dict = response.get_json()
         self.assertEqual(response_dict['quantity'], 1)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
 
     def test_checkout_features_success_equal(self):
         """Test for cases when the checkout feature executes successfully
@@ -372,17 +374,17 @@ class TestInventory(TestCase):
         # Get record as JSON
         data = response.get_json()
         request_dict = dict()
-        request_dict['product_id'] = data['product_id']
-        request_dict['condition'] = data['condition']
         request_dict['ordered_quantity'] = data['quantity']
         logging.debug(type(data['condition']))
-        response = self.client.put(f"{BASE_URL}/checkout/{request_dict['product_id']}",
+        response = self.client.put(f"{BASE_URL}/checkout/{data['product_id']}"
+                                   f"/{data['condition']}",
                                    json=request_dict)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         temp = response.get_json()
         logging.debug(temp)
         self.assertEqual(temp['quantity'], 0)
         self.assertEqual(temp['active'], False)
+
 
     def test_checkout_features_failure_greater(self):
         """Test for cases when the checkout feature fails to execute
@@ -395,13 +397,13 @@ class TestInventory(TestCase):
         # Get record as JSON
         data = response.get_json()
         request_dict = dict()
-        request_dict['product_id'] = data['product_id']
-        request_dict['condition'] = data['condition']
         request_dict['ordered_quantity'] = data['quantity'] + 1
         logging.debug(type(data['condition']))
-        response = self.client.put(f"{BASE_URL}/checkout/{request_dict['product_id']}",
+        response = self.client.put(f"{BASE_URL}/checkout/{data['product_id']}/"
+                                   f"{data['condition']}",
                                    json=request_dict)
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
 
     def test_checkout_features_failure_invalid_product_id(self):
         """Test for cases when the checkout feature fails if product is not in the database"""
@@ -413,11 +415,10 @@ class TestInventory(TestCase):
         # Get record as JSON
         data = response.get_json()
         request_dict = dict()
-        request_dict['product_id'] = data['product_id'] + 1
-        request_dict['condition'] = data['condition']
         request_dict['ordered_quantity'] = data['quantity'] + 1
         logging.debug(type(data['condition']))
-        response = self.client.put(f"{BASE_URL}/checkout/{request_dict['product_id']}",
+        response = self.client.put(f"{BASE_URL}/checkout/{data['product_id'] + 1}"
+                                   f"/{data['condition']}",
                                    json=request_dict)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         
