@@ -5,12 +5,13 @@ Test cases can be run with the following:
   nosetests -v --with-spec --spec-color
   coverage report -m
 """
-import os
 import logging
+import os
 from unittest import TestCase
+
 from service import app
-from service.models import Inventory, db, init_db
 from service.common import status  # HTTP Status Codes
+from service.models import Inventory, db, init_db
 from tests.factories import InventoryFactory
 
 DATABASE_URI = os.getenv(
@@ -188,17 +189,12 @@ class TestInventory(TestCase):
         # check if record was created successfully
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        request_body = {
-            "product_id": test_inventory_record.product_id,
-            "condition": test_inventory_record.condition.value
-        }
-
-        response = self.client.delete(f"{BASE_URL}/{test_inventory_record.product_id}", json=request_body)
+        response = self.client.delete(f"{BASE_URL}/{test_inventory_record.product_id}")
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(len(response.data), 0)
         
         # make sure they are deleted
-        response = self.client.get(f"{BASE_URL}/{test_inventory_record.product_id}", json=request_body)
+        response = self.client.get(f"{BASE_URL}/{test_inventory_record.product_id}", json=test_inventory_record.serialize())
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
 
@@ -208,9 +204,8 @@ class TestInventory(TestCase):
         test_inventory_record = InventoryFactory()
         test_inventory_record.product_id = SAMPLE_PRODUCT_ID
 
-        response = self.client.delete(f"{BASE_URL}/{SAMPLE_PRODUCT_ID}", json=test_inventory_record.serialize())
-        # specified product shouldnt exist already
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        response = self.client.delete(f"{BASE_URL}/{SAMPLE_PRODUCT_ID}")
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
 
     def test_list_inventory_records(self):

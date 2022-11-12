@@ -111,13 +111,13 @@ def delete_inventory_record(product_id):
     @param: product_id is the id of the record that is to be deleted
     """
     app.logger.info("Request to delete inventory record with id: %s", product_id)
-    inventory = find_from_request_json(request.get_json())
+    inventory = Inventory.find_by_id(product_id)
     app.logger.info(f"For the provided id, Inventory Record returned is: {inventory}")
 
     if inventory:
         inventory.delete()
     else:
-        abort(status.HTTP_404_NOT_FOUND, f"Product with id '{product_id}' was not found.")
+        abort(status.HTTP_204_NO_CONTENT)
 
     app.logger.info(f"Inventory record with ID {product_id} delete complete.")
     return "", status.HTTP_204_NO_CONTENT
