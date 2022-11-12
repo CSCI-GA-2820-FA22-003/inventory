@@ -63,7 +63,8 @@ class TestInventory(unittest.TestCase):
         self.assertEqual(record.restock_level, 2)
 
     def test_inventory_serialize(self):
-        record = Inventory(product_id=1, name="monitor", condition=Inventory.Condition.NEW, quantity=10, reorder_quantity=20, restock_level=2, active=False)
+        record = Inventory(product_id=1, name="monitor", condition=Inventory.Condition.NEW,
+                            quantity=10, reorder_quantity=20, restock_level=2, active = True)
         actual_output = record.serialize()
         expected_output = {
             "product_id": 1,
@@ -72,7 +73,7 @@ class TestInventory(unittest.TestCase):
             "quantity": 10,
             "reorder_quantity": 20,
             "restock_level": 2,
-            "active": False
+            "active": True
         }
         self.assertEqual(actual_output, expected_output)
 

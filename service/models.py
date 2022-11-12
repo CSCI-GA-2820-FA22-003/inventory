@@ -9,7 +9,6 @@ import enum
 from flask_sqlalchemy import SQLAlchemy
 from flask import Flask
 
-
 logger = logging.getLogger("flask.app")
 
 # Create the SQLAlchemy object to be initialized later in init_db()
@@ -73,10 +72,12 @@ class Inventory(db.Model):
         Updates a Inventory to the database
         """
         self.name = new_data.name or self.name
-        self.quantity = new_data.quantity or self.quantity
+        self.quantity = new_data.quantity
         self.reorder_quantity = new_data.reorder_quantity or self.reorder_quantity
         self.restock_level = new_data.restock_level or self.restock_level
         self.updated_at = datetime.utcnow()
+        if new_data.active is False:
+            self.active = new_data.active
         logger.info("Saving %s", self.name)
         db.session.commit()
 
@@ -191,12 +192,14 @@ class Inventory(db.Model):
             :rtype: list
         """
         __query = db.session.query(cls)
-        for attr,values in by_filters.items():
-            if attr=="quantity":
-                (value,oper)=values
-                dict_oper={"=":getattr(cls,attr)==value, "<=":getattr(cls,attr)<=value,
-                ">=":getattr(cls,attr)>=value, "<":getattr(cls,attr)<value,
-                ">":getattr(cls,attr)>value}
+        for attr, values in by_filters.items():
+            if attr == "quantity":
+                (value, oper) = values
+                dict_oper = {
+                    "=": getattr(cls, attr) == value, "<=": getattr(cls, attr) <= value,
+                    ">=": getattr(cls, attr) >= value, "<": getattr(cls, attr) < value,
+                    ">": getattr(cls, attr) > value
+                    }
                 try:
                     filt = dict_oper[oper]
                     __query = __query.filter(filt)
@@ -204,7 +207,7 @@ class Inventory(db.Model):
                     logger.info("Invalid operator %s ...", oper)
                     return "Invalid"
             else:
-                __query = __query.filter(getattr(cls,attr)==values)
+                __query = __query.filter(getattr(cls, attr) == values)
             # now we can run the query
         results = __query.all()
         return results

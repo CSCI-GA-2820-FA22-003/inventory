@@ -46,7 +46,7 @@ def init_db():
     Inventory.init_db(app)
 
 
-@app.route("/inventory/<product_id>", methods=["GET"])
+@app.route("/inventory/<int:product_id>", methods=["GET"])
 def get_inventory_records(product_id):
     """
     Retrieve a single record
@@ -99,8 +99,8 @@ def create_inventory_records():
 def list_inventory_records():
     """Returns all of the Inventory records"""
     records = []
-    feature_flag=False
-    req={}
+    feature_flag = False
+    req = {}
 
     name = request.args.get("name")
     condition = request.args.get("condition")
@@ -110,29 +110,29 @@ def list_inventory_records():
 
     if name:
         app.logger.info("Filtering by name: %s", name)
-        feature_flag=True
-        req["name"]=name
+        feature_flag = True
+        req["name"] = name
     if condition:
         app.logger.info("Filtering by condition:%s", condition)
         condition = Inventory.Condition(condition)
-        feature_flag=True
-        req["condition"]=condition
+        feature_flag = True
+        req["condition"] = condition
     if quantity:
         app.logger.info("Filtering by quantity: %s", quantity)
-        feature_flag=True
-        req["quantity"]=(quantity,operator)
+        feature_flag = True
+        req["quantity"] = (quantity, operator)
     if active:
         app.logger.info("Filtering by available: %s", active)
-        feature_flag=True
-        req["active"]=active
+        feature_flag = True
+        req["active"] = active
 
     if feature_flag:
-        records=Inventory.find_by_general_filter(req)
+        records = Inventory.find_by_general_filter(req)
     else:
         app.logger.info("Request list of all inventory records")
         records = Inventory.all()
 
-    if records=="Invalid":
+    if records == "Invalid":
         abort(status.HTTP_400_BAD_REQUEST)
     elif not records:
         abort(status.HTTP_404_NOT_FOUND, "No Product Found")
@@ -149,7 +149,7 @@ def delete_inventory_record(product_id, condition):
     @param: product_id is the id of the record that is to be deleted
     """
     app.logger.info(f"Request to delete inventory record with id: {product_id} with condition: {condition}")
-    inventory = Inventory.find((product_id, condition ))
+    inventory = Inventory.find((product_id, condition))
     app.logger.info(f"For the provided id, Inventory Record returned is: {inventory}")
     if not inventory:
         return "", status.HTTP_204_NO_CONTENT
@@ -157,20 +157,49 @@ def delete_inventory_record(product_id, condition):
     return "", status.HTTP_204_NO_CONTENT
 
 
-@app.route("/inventory/<int:product_id>/", methods=["PUT"])
-@app.route("/inventory/<int:product_id>", methods=["PUT"])
-def update_inventory_records(product_id):
+@app.route("/inventory/<int:product_id>/<condition>/", methods=["PUT"])
+@app.route("/inventory/<int:product_id>/<condition>", methods=["PUT"])
+def update_inventory_records(product_id, condition):
     """Updates an existing inventory record given that it is present in the database table"""
     app.logger.info("Update an inventory record")
     # Retrieve item from table
     new_record = Inventory()
     new_record.deserialize(request.get_json())
-    existing_record = Inventory.find((new_record.product_id, new_record.condition))
+    condition_enum = Inventory.Condition(condition).name
+    existing_record = Inventory.find((product_id, condition_enum))
 
     if not existing_record:
         abort(status.HTTP_404_NOT_FOUND, f"Product with id '{product_id}' was not found.")
 
     # Apply update to database & return as JSON
+    existing_record.update(new_record)
+    return jsonify(existing_record.serialize()), status.HTTP_200_OK
+
+
+@app.route("/inventory/checkout/<int:product_id>/<condition>/", methods=["PUT"])
+@app.route("/inventory/checkout/<int:product_id>/<condition>", methods=["PUT"])
+def checkout_quantity(product_id, condition):
+    """Reduces quantity from inventory of a particular item based on the amount specified by user"""
+    data = request.get_json()
+    condition_enum = Inventory.Condition(condition).name
+    ordered_quantity = data['ordered_quantity']
+    existing_record = Inventory.find((product_id, condition_enum))
+
+    if not existing_record:
+        abort(status.HTTP_404_NOT_FOUND, f"Product with id '{product_id}' was not found.")
+
+    new_record = Inventory()
+    if ordered_quantity > existing_record.quantity:
+        del new_record
+        abort(status.HTTP_405_METHOD_NOT_ALLOWED, f"Quantity specified is more than quantity of"
+                                                  f" item with Product ID '{product_id}'"
+                                                  "currently in database.")
+    elif ordered_quantity == existing_record.quantity:
+        new_record.quantity = 0
+        new_record.active = False
+    else:
+        new_record.quantity = existing_record.quantity - ordered_quantity
+
     existing_record.update(new_record)
     return jsonify(existing_record.serialize()), status.HTTP_200_OK
 
