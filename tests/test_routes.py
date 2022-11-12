@@ -5,14 +5,15 @@ Test cases can be run with the following:
   nosetests -v --with-spec --spec-color
   coverage report -m
 """
-import os
 import logging
+import os
 import random
 from urllib.parse import quote_plus
 from unittest import TestCase
+
 from service import app
-from service.models import Inventory, db, init_db
 from service.common import status  # HTTP Status Codes
+from service.models import Inventory, db, init_db
 from tests.factories import InventoryFactory
 
 DATABASE_URI = os.getenv(
@@ -187,35 +188,21 @@ class TestInventory(TestCase):
 
     def test_delete_inventory_record_success(self):
         """Test to check if it deletes an inventory record"""
-        test_inventory_record = self._create_inventory_records(1)[0]
-
-        response = self.client.get(f"{BASE_URL}/{test_inventory_record.product_id}", json=test_inventory_record.serialize())
-        # check if record was created successfully
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-        request_body = {
-            "product_id": test_inventory_record.product_id,
-            "condition": test_inventory_record.condition.value
-        }
-
-        response = self.client.delete(f"{BASE_URL}/{test_inventory_record.product_id}", json=request_body)
+        test_record = self._create_inventory_records(1)[0]
+        response = self.client.delete(f"{BASE_URL}/{test_record.product_id}/{test_record.condition.name}")
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(len(response.data), 0)
-        
         # make sure they are deleted
-        response = self.client.get(f"{BASE_URL}/{test_inventory_record.product_id}", json=request_body)
+        response = self.client.get(f"{BASE_URL}/{test_record.product_id}", json=test_record.serialize())
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
 
     def test_delete_inventory_record_exception(self):
-        """Test to check if code handles non-existent record"""
-        SAMPLE_PRODUCT_ID = -999
-        test_inventory_record = InventoryFactory()
-        test_inventory_record.product_id = SAMPLE_PRODUCT_ID
-
-        response = self.client.delete(f"{BASE_URL}/{SAMPLE_PRODUCT_ID}", json=test_inventory_record.serialize())
-        # specified product shouldnt exist already
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        """Test to check if code deletes non-existent record"""
+        SAMPLE_PRODUCT_ID = 10
+        SAMPLE_CONDITION = 'NEW'
+        response = self.client.delete(f"{BASE_URL}/{SAMPLE_PRODUCT_ID}/{SAMPLE_CONDITION}")
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
 
     def test_list_inventory_records(self):
@@ -237,7 +224,7 @@ class TestInventory(TestCase):
         data = response.get_json()
         # increment product_id so that query searches for a different product_id
         data['product_id'] += 1
-        response = self.client.put("{}/{}/{}".format(BASE_URL, data['product_id'], data['condition']), json=data)
+        response = self.client.put("{}/{}".format(BASE_URL, data['product_id']), json=data)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
 

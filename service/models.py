@@ -177,7 +177,7 @@ class Inventory(db.Model):
 
     @classmethod
     def find(cls, by_params):
-        """ Finds a Inventory by it's ID """
+        """ Finds a Inventory by it's ID and condition """
         by_id, by_condition = by_params
         logger.info("Processing lookup for id %s and condition %s ...", by_id, by_condition)
         return cls.query.get((by_id, by_condition))
