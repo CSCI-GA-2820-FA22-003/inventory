@@ -154,6 +154,40 @@ List all inventory records.
 ```
 The list of inventory records is returned in the response.
 
+#### `GET /inventory?name=<name>`
+
+List all inventory records with name equal to the given name in the query string.
+
+#### `GET /inventory?condition=<condition>`
+
+List all inventory records with condition equal to the given condition in the query string.
+
+#### `GET /inventory?active=<is_active>`
+
+List all inventory records with active equal to the given value in the query string. Therefore if is_active is True then all inventory records which are available in the inventory will be returned. <br/> **Note**: is_active should be a boolean value.
+
+#### `GET /inventory?quantity=<quantity>&operator=<operator>`
+
+List all inventory records with quantiy and operator in the query string. 
+<br/> <br/> If you pass operator ```>``` then all inventory records having a quantity greater than quantity passed in the query string will be returned. <br/> <br/> **Note**: Possible operators are ```>```, ```<```,```>=```,```<=```,```=```. 
+<br/> Any other operators will return a ```400_Bad_Request```
+
+
+#### Response
+```
+[
+    {
+	"condition": "return",
+	"name": "laptop",
+	"product_id": 2,
+	"quantity": 20,
+	"reorder_quantity": 15,
+	"restock_level": 3
+    }
+]
+```
+The list of inventory records is returned in the response.
+
 #### `PUT /inventory/{product_id}`
 
 Update an inventory record.

@@ -350,6 +350,7 @@ class TestInventory(TestCase):
         name_list = [record for record in records if record.name == test_name]
         logging.info("Name=%s: %d = %s", test_name, len(name_list), name_list)
         resp = self.client.get(BASE_URL, query_string=f"name={quote_plus(test_name)}")
+        resp
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         data = resp.get_json()
         self.assertEqual(len(data), len(name_list))
