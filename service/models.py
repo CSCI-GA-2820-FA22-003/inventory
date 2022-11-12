@@ -72,8 +72,9 @@ class Inventory(db.Model):
         Updates a Inventory to the database
         """
         self.name = new_data.name or self.name
-        if hasattr(new_data, 'quantity'):
-            self.quantity = new_data.quantity
+        # if hasattr(new_data, 'quantity'):
+        #     self.quantity = new_data.quantity
+        self.quantity = new_data.quantity
         self.reorder_quantity = new_data.reorder_quantity or self.reorder_quantity
         self.restock_level = new_data.restock_level or self.restock_level
         self.updated_at = datetime.utcnow()

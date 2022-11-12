@@ -162,13 +162,11 @@ def checkout_quantity(product_id):
         del new_record
         abort(status.HTTP_405_METHOD_NOT_ALLOWED, f"Quantity specified is more than quantity of"
                                                   f" item with Product ID '{product_id}'"
-                                                  "currently in database.")
-    elif ordered_quantity == existing_record.quantity:
-        new_record.quantity = 0
-        new_record.active = False
-        new_record.checkout_flag = True
+                                                  "currently in database.")    
     else:
         new_record.quantity = existing_record.quantity - ordered_quantity
+        if new_record.quantity == 0:
+            new_record.active = False
         app.logger.info("Executed till here")
 
     existing_record.update(new_record)
