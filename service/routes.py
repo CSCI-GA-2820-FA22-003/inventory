@@ -133,8 +133,10 @@ def list_inventory_records():
         app.logger.info("Request list of all inventory records")
         records = Inventory.all()
 
-    if not records:
-        abort(status.HTTP_404_NOT_FOUND, "Product was not found.")
+    if records[0]==-1:
+        abort(status.HTTP_400_BAD_REQUEST)
+    elif not records:
+        abort(status.HTTP_404_NOT_FOUND, "No Product Found")
 
     results = [record.serialize() for record in records]
     app.logger.info("Returning %d inventory records", len(results))

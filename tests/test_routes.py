@@ -418,7 +418,7 @@ class TestInventory(TestCase):
             "Quantity=%s: %d = %s", test_quantity, len(quantity_list), quantity_list
         )
         resp = self.client.get(BASE_URL, query_string=f"quantity={str(test_quantity)}&operator={test_operator}")
-        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_query_inventories_by_less_than_quantity(self):
         """It should Query Inventories by Less Than Quantity Individually"""
