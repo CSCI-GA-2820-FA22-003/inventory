@@ -111,16 +111,7 @@ Created record
 ```
 The created record is returned in the response.
 
-#### `GET /inventory/{product_id}`
-
-#### Request
-
-```
-{
-    "product_id": 2,
-    "condition": "new"
-}
-```
+#### `GET /inventory/{product_id}/{condition}`
 
 #### Response
 ```
