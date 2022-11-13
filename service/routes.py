@@ -55,7 +55,7 @@ def get_inventory_records(product_id,condition):
     # fetch the condition from the payload of the data
     app.logger.info("Reading the given record")
     
-    inventory = Inventory.find((product_id,condition))
+    inventory = Inventory.find((product_id, condition))
 
     if not inventory:
         abort(status.HTTP_404_NOT_FOUND, f"Product with id '{product_id}' was not found.")
