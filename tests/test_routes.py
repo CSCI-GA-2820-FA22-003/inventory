@@ -193,7 +193,7 @@ class TestInventory(TestCase):
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(len(response.data), 0)
         # make sure they are deleted
-        response = self.client.get(f"{BASE_URL}/{test_record.product_id}", json=test_record.serialize())
+        response = self.client.get(f"{BASE_URL}/{test_record.product_id}/{test_record.condition.name}")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
 
@@ -290,7 +290,7 @@ class TestInventory(TestCase):
         record.reorder_quantity = None
         record.restock_level = None
         logging.debug("Test Read Records: %s", record.serialize())
-        response = self.client.get(f"{BASE_URL}/{record.product_id}", json= record.serialize())
+        response = self.client.get(f"{BASE_URL}/{record.product_id}/{record.condition.name}")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.get_json()
         self.assertEqual(data["product_id"], record.product_id)
@@ -312,12 +312,7 @@ class TestInventory(TestCase):
     def test_method_not_allowed(self):
         """Test if API is called with the wrong method type"""
         test_record = InventoryFactory()
-        # calling a post with a product id
-
-        logging.debug("Test Inventory Records with method not allowed post request: %s", test_record.serialize())
-        response = self.client.post(f"{BASE_URL}/{test_record.product_id}", json=test_record.serialize())
-        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
-        
+         
         # calling a delete method without product id
         logging.debug("Test Inventory Records with method not allowed delete request: %s", test_record.serialize())
         response = self.client.delete(f"{BASE_URL}", json=test_record.serialize())
