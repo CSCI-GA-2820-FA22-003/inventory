@@ -86,8 +86,8 @@ def create_inventory_records():
 
     inventory.create()
     location_url = url_for("get_inventory_records", product_id=inventory.product_id, condition=inventory.condition, _external=True)
-    statement = f"Inventory product with ID {inventory.product_id}"
-    statement += f"and condition: {inventory.condition} created."
+    statement = f"Inventory product with ID {inventory.product_id}" \
+    f"and condition: {inventory.condition} created."
     app.logger.info(statement)
     # return jsonify(inventory.serialize()), status.HTTP_201_CREATED
 
