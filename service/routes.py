@@ -11,6 +11,7 @@ from .common import status  # HTTP Status Codes
 # Import Flask application
 from . import app
 
+app.url_map.strict_slashes = False
 
 @app.route("/health", methods=["GET"])
 def health():
@@ -156,7 +157,6 @@ def delete_inventory_record(product_id, condition):
     return "", status.HTTP_204_NO_CONTENT
 
 
-@app.route("/inventory/<int:product_id>/<condition>/", methods=["PUT"])
 @app.route("/inventory/<int:product_id>/<condition>", methods=["PUT"])
 def update_inventory_records(product_id, condition):
     """Updates an existing inventory record given that it is present in the database table"""
@@ -175,7 +175,6 @@ def update_inventory_records(product_id, condition):
     return jsonify(existing_record.serialize()), status.HTTP_200_OK
 
 
-@app.route("/inventory/checkout/<int:product_id>/<condition>/", methods=["PUT"])
 @app.route("/inventory/checkout/<int:product_id>/<condition>", methods=["PUT"])
 def checkout_quantity(product_id, condition):
     """Reduces quantity from inventory of a particular item based on the amount specified by user"""
