@@ -46,17 +46,16 @@ def init_db():
     Inventory.init_db(app)
 
 
-@app.route("/inventory/<int:product_id>", methods=["GET"])
-def get_inventory_records(product_id):
+@app.route("/inventory/<int:product_id>/<condition>", methods=["GET"])
+def get_inventory_records(product_id,condition):
     """
     Retrieve a single record
     This endpoint will return a record based on it's product id and condition
     """
     # fetch the condition from the payload of the data
     app.logger.info("Reading the given record")
-    check_content_type("application/json")
-
-    inventory = find_from_request_json(request.get_json())
+    
+    inventory = Inventory.find((product_id,condition))
 
     if not inventory:
         abort(status.HTTP_404_NOT_FOUND, f"Product with id '{product_id}' was not found.")
@@ -86,7 +85,7 @@ def create_inventory_records():
         abort(status.HTTP_409_CONFLICT, error)
 
     inventory.create()
-    location_url = url_for("get_inventory_records", product_id=inventory.product_id, _external=True)
+    location_url = url_for("get_inventory_records", product_id=inventory.product_id, condition=inventory.condition, _external=True)
     statement = f"Inventory product with ID {inventory.product_id}"
     statement += f"and condition: {inventory.condition} created."
     app.logger.info(statement)
