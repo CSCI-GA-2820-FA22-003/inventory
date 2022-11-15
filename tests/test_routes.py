@@ -224,7 +224,7 @@ class TestInventory(TestCase):
         data = response.get_json()
         # increment product_id so that query searches for a different product_id
         data['product_id'] += 1
-        response = self.client.put(f"{BASE_URL}/{data['product_id']}/{data['condition']}"
+        response = self.client.put(f"{BASE_URL}/{data['product_id']}/{test_record.condition.name}"
                                    , json=data)
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
@@ -240,7 +240,7 @@ class TestInventory(TestCase):
         data["restock_level"] += 1
         data["name"] = "some_name"
         # Make call to update record
-        response = self.client.put(f"{BASE_URL}/{data['product_id']}/{data['condition']}", json=data)
+        response = self.client.put(f"{BASE_URL}/{data['product_id']}/{test_record.condition.name}", json=data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         updated_record = response.get_json()
         self.assertEqual(data, updated_record)
@@ -573,7 +573,6 @@ class TestInventory(TestCase):
         data = response.get_json()
         request_dict = dict()
         request_dict['ordered_quantity'] = data['quantity'] + 1
-        logging.debug(type(data['condition']))
         response = self.client.put(f"{BASE_URL}/checkout/{data['product_id']}/"
                                    f"{data['condition']}",
                                    json=request_dict)
@@ -591,7 +590,6 @@ class TestInventory(TestCase):
         data = response.get_json()
         request_dict = dict()
         request_dict['ordered_quantity'] = data['quantity'] + 1
-        logging.debug(type(data['condition']))
         response = self.client.put(f"{BASE_URL}/checkout/{data['product_id'] + 1}"
                                    f"/{data['condition']}",
                                    json=request_dict)

@@ -164,8 +164,7 @@ def update_inventory_records(product_id, condition):
     # Retrieve item from table
     new_record = Inventory()
     new_record.deserialize(request.get_json())
-    condition_enum = Inventory.Condition(condition).name
-    existing_record = Inventory.find((product_id, condition_enum))
+    existing_record = Inventory.find((product_id, condition))
 
     if not existing_record:
         abort(status.HTTP_404_NOT_FOUND, f"Product with id '{product_id}' was not found.")
@@ -179,26 +178,10 @@ def update_inventory_records(product_id, condition):
 def checkout_quantity(product_id, condition):
     """Reduces quantity from inventory of a particular item based on the amount specified by user"""
     data = request.get_json()
-    condition_enum = Inventory.Condition(condition).name
-    ordered_quantity = data['ordered_quantity']
-    existing_record = Inventory.find((product_id, condition_enum))
-
+    existing_record = Inventory.find((product_id, condition))
     if not existing_record:
         abort(status.HTTP_404_NOT_FOUND, f"Product with id '{product_id}' was not found.")
-
-    new_record = Inventory()
-    if ordered_quantity > existing_record.quantity:
-        del new_record
-        abort(status.HTTP_405_METHOD_NOT_ALLOWED, f"Quantity specified is more than quantity of"
-                                                  f" item with Product ID '{product_id}'"
-                                                  "currently in database.")
-    elif ordered_quantity == existing_record.quantity:
-        new_record.quantity = 0
-        new_record.active = False
-    else:
-        new_record.quantity = existing_record.quantity - ordered_quantity
-
-    existing_record.update(new_record)
+    existing_record.checkout(data)
     return jsonify(existing_record.serialize()), status.HTTP_200_OK
 
 ######################################################################
