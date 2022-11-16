@@ -132,13 +132,11 @@ def list_inventory_records():
 
     if feature_flag:
         records = Inventory.find_by_general_filter(req)
+        if records == "Invalid":
+            abort(status.HTTP_400_BAD_REQUEST)
     else:
         app.logger.info("Request list of all inventory records")
         records = Inventory.all()
-
-    if records == "Invalid":
-        abort(status.HTTP_400_BAD_REQUEST)
-
     results = [record.serialize() for record in records]
     app.logger.info("Returning %d inventory records", len(results))
     return jsonify(results), status.HTTP_200_OK

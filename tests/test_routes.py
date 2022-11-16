@@ -477,7 +477,7 @@ class TestInventory(TestCase):
             for record in data:
                 self.assertGreater(record["quantity"], test_quantity)
         else:
-            self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+            self.assertEqual(resp.status_code, status.HTTP_200_OK)
 
     def test_query_inventories_by_combinations(self):
         """It should Query Inventories by combined filters"""
