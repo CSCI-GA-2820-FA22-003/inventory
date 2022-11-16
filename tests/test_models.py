@@ -2,11 +2,12 @@
 Test cases for Inventory Model
 
 """
-import os
 import logging
+import os
 import unittest
+
 from service import app
-from service.models import Inventory, DataValidationError, OutOfRangeError, db
+from service.models import DataValidationError, InactiveRecordError, Inventory, OutOfRangeError, db
 from tests.factories import InventoryFactory
 
 DATABASE_URI = os.getenv(
@@ -170,7 +171,6 @@ class TestInventory(unittest.TestCase):
     def test_update_a_record(self):
         """It should Update a Record"""
         record = InventoryFactory()
-        logging.debug(record)
         record.create()
         self.assertIsNotNone(record.product_id)
 
@@ -183,3 +183,49 @@ class TestInventory(unittest.TestCase):
         record.update(new_data)
 
         self.assertEqual(record.serialize(), request_body)
+    
+    def test_checkout_success(self):
+        """Test for checkout success"""
+        record = InventoryFactory()
+        record.create()
+        record.active = True
+        self.assertIsNotNone(record.product_id)
+
+        original_quantity = record.quantity
+        data = {}
+        data["ordered_quantity"] = 1
+        record.checkout(data)
+        self.assertEqual(record.quantity, original_quantity-1)
+
+    def test_checkout_inactive_exception(self):
+        """Test for checkout at inactive status"""
+        record = InventoryFactory()
+        record.create()
+        record.active = False
+        self.assertIsNotNone(record.product_id)
+        data = {}
+        data["ordered_quantity"] = 1
+        self.assertRaises(InactiveRecordError, record.checkout, data)
+    
+    def test_checkout_quantity_type_exception(self):
+        """Test for checkout at wrong quantity type"""
+        record = InventoryFactory()
+        record.create()
+        record.active = True
+        self.assertIsNotNone(record.product_id)
+
+        data = {}
+        data["ordered_quantity"] = "1"
+        self.assertRaises(OutOfRangeError, record.checkout, data)
+    
+    def test_checkout_exceed_exeception(self):
+        """Test for checkout exceed exception"""
+        record = InventoryFactory()
+        record.create()
+        record.active = True
+        self.assertIsNotNone(record.product_id)
+
+        original_quantity = record.quantity
+        data = {}
+        data["ordered_quantity"] = original_quantity + 1
+        self.assertRaises(OutOfRangeError, record.checkout, data)

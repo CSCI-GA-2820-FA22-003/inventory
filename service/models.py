@@ -73,10 +73,13 @@ class Inventory(db.Model):
         """ Updates a Inventory to the database """
         if new_data.active != None:
             self.active = new_data.active
-        self.quantity = new_data.quantity or self.quantity
+        if new_data.quantity != None:
+            self.quantity = new_data.quantity
         self.name = new_data.name or self.name
-        self.reorder_quantity = new_data.reorder_quantity or self.reorder_quantity
-        self.restock_level = new_data.restock_level or self.restock_level
+        if new_data.reorder_quantity != None:
+            self.reorder_quantity = new_data.reorder_quantity
+        if new_data.restock_level != None:
+            self.restock_level = new_data.restock_level
         self.updated_at = datetime.utcnow()
         logger.info("Saving %s", self.name)
         db.session.commit()
@@ -131,6 +134,7 @@ class Inventory(db.Model):
         Args:
             data (dict): A dictionary containing the resource data
         """
+        self.check_primary_key_valid(data)
         if data.get("name"):
             if isinstance(data.get("name"), str):
                 self.name = data.get("name")
@@ -190,7 +194,6 @@ class Inventory(db.Model):
             if type(data.get("product_id")) is int and type(data.get("condition")) is str:
                 self.product_id = data.get("product_id")
                 self.condition = self.Condition(data.get("condition"))
-
                 return True
         else:
             return False

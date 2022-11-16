@@ -97,11 +97,12 @@ class TestInventory(TestCase):
         self.assertEqual(new_record["active"], test_record.active)
 
     def test_create_inventory_records_with_defaults(self):
-        """ Test Create Products With Defaults"""
+        """ Test Create Products With Defaults success"""
         test_record = InventoryFactory()
         request_body = {
             "product_id": test_record.product_id,
-            "name": test_record.name
+            "name": test_record.name,
+            "condition": test_record.condition.value
         }
 
         logging.debug("Test Inventory Records: %s", request_body)
@@ -116,7 +117,7 @@ class TestInventory(TestCase):
         new_record = response.get_json()
         self.assertEqual(new_record["product_id"], test_record.product_id)
         self.assertEqual(new_record["name"], test_record.name)
-        self.assertEqual(new_record["condition"], Inventory.Condition.NEW.value)
+        self.assertEqual(new_record["condition"], test_record.condition.value)
         self.assertEqual(new_record["quantity"], 0)
         self.assertEqual(new_record["reorder_quantity"], 0)
         self.assertEqual(new_record["restock_level"], 0)
@@ -517,67 +518,6 @@ class TestInventory(TestCase):
         self.assertEqual(response.get_json(), {"status": "OK"})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-
-    def test_checkout_features_success_less(self):
-        """Test for cases when the checkout feature executes successfully
-        when ordered quantity is less than quantity of item in the database"""
-        test_record = InventoryFactory()
-        response = self.client.post(BASE_URL, json=test_record.serialize())
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        logging.debug('Created record, %s', Inventory().deserialize(response.get_json()))
-
-        # Get record as JSON
-        data = response.get_json()
-        request_dict = dict()
-        request_dict['ordered_quantity'] = data['quantity'] - 1
-        response = self.client.put(f"{BASE_URL}/checkout/{data['product_id']}"
-                                   f"/{data['condition']}",
-                                   json=request_dict)
-        response_dict = response.get_json()
-        self.assertEqual(response_dict['quantity'], 1)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-
-    def test_checkout_features_success_equal(self):
-        """Test for cases when the checkout feature executes successfully
-        when ordered quantity is equal to quantity of item in the database"""
-        test_record = InventoryFactory()
-        response = self.client.post(BASE_URL, json=test_record.serialize())
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        logging.debug('Created record, %s', Inventory().deserialize(response.get_json()))
-
-        # Get record as JSON
-        data = response.get_json()
-        request_dict = dict()
-        request_dict['ordered_quantity'] = data['quantity']
-        logging.debug(type(data['condition']))
-        response = self.client.put(f"{BASE_URL}/checkout/{data['product_id']}"
-                                   f"/{data['condition']}",
-                                   json=request_dict)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        temp = response.get_json()
-        self.assertEqual(temp['quantity'], 0)
-        self.assertEqual(temp['active'], False)
-
-
-    def test_checkout_features_failure_greater(self):
-        """Test for cases when the checkout feature fails to execute
-        when ordered quantity is greater than quantity of item in the database"""
-        test_record = InventoryFactory()
-        response = self.client.post(BASE_URL, json=test_record.serialize())
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        logging.debug('Created record, %s', Inventory().deserialize(response.get_json()))
-
-        # Get record as JSON
-        data = response.get_json()
-        request_dict = dict()
-        request_dict['ordered_quantity'] = data['quantity'] + 1
-        response = self.client.put(f"{BASE_URL}/checkout/{data['product_id']}/"
-                                   f"{data['condition']}",
-                                   json=request_dict)
-        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
-
-
     def test_checkout_features_failure_invalid_product_id(self):
         """Test for cases when the checkout feature fails if product is not in the database"""
         test_record = InventoryFactory()
@@ -590,6 +530,25 @@ class TestInventory(TestCase):
         request_dict = dict()
         request_dict['ordered_quantity'] = data['quantity'] + 1
         response = self.client.put(f"{BASE_URL}/checkout/{data['product_id'] + 1}"
-                                   f"/{data['condition']}",
+                                   f"/{test_record.condition.name}",
                                    json=request_dict)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+    
+    # def test_checkout_success(self):
+    #     """Test for cases when the checkout feature executes successfully
+    #     when ordered quantity is less than quantity of item in the database"""
+    #     test_record = InventoryFactory()
+    #     response = self.client.post(BASE_URL, json=test_record.serialize())
+    #     self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+    #     logging.debug('Created record, %s', Inventory().deserialize(response.get_json()))
+
+    #     # Get record as JSON
+    #     data = response.get_json()
+    #     request_dict = dict()
+    #     request_dict['ordered_quantity'] = data['quantity'] - 1
+    #     response = self.client.put(f"{BASE_URL}/checkout/{data['product_id']}"
+    #                                f"/{data['condition']}",
+    #                                json=request_dict)
+    #     response_dict = response.get_json()
+    #     self.assertEqual(response_dict['quantity'], 1)
+    #     self.assertEqual(response.status_code, status.HTTP_200_OK)
