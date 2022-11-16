@@ -76,6 +76,10 @@ def create_inventory_records():
     check_content_type("application/json")
     inventory = Inventory()
     data = request.get_json()
+
+    # TODO: check if status code is correctly passed below
+    if inventory.check_primary_key_valid(data) == False:
+        abort(status.HTTP_409_CONFLICT, "Primary key missing/invalid")
     inventory.deserialize(data)
 
     existing_inventory = Inventory.find((inventory.product_id, inventory.condition))
@@ -128,15 +132,11 @@ def list_inventory_records():
 
     if feature_flag:
         records = Inventory.find_by_general_filter(req)
+        if records == "Invalid":
+            abort(status.HTTP_400_BAD_REQUEST)
     else:
         app.logger.info("Request list of all inventory records")
         records = Inventory.all()
-
-    if records == "Invalid":
-        abort(status.HTTP_400_BAD_REQUEST)
-    elif not records:
-        abort(status.HTTP_404_NOT_FOUND, "No Product Found")
-
     results = [record.serialize() for record in records]
     app.logger.info("Returning %d inventory records", len(results))
     return jsonify(results), status.HTTP_200_OK
@@ -164,8 +164,7 @@ def update_inventory_records(product_id, condition):
     # Retrieve item from table
     new_record = Inventory()
     new_record.deserialize(request.get_json())
-    condition_enum = Inventory.Condition(condition).name
-    existing_record = Inventory.find((product_id, condition_enum))
+    existing_record = Inventory.find((product_id, condition))
 
     if not existing_record:
         abort(status.HTTP_404_NOT_FOUND, f"Product with id '{product_id}' was not found.")
@@ -179,26 +178,10 @@ def update_inventory_records(product_id, condition):
 def checkout_quantity(product_id, condition):
     """Reduces quantity from inventory of a particular item based on the amount specified by user"""
     data = request.get_json()
-    condition_enum = Inventory.Condition(condition).name
-    ordered_quantity = data['ordered_quantity']
-    existing_record = Inventory.find((product_id, condition_enum))
-
+    existing_record = Inventory.find((product_id, condition))
     if not existing_record:
         abort(status.HTTP_404_NOT_FOUND, f"Product with id '{product_id}' was not found.")
-
-    new_record = Inventory()
-    if ordered_quantity > existing_record.quantity:
-        del new_record
-        abort(status.HTTP_405_METHOD_NOT_ALLOWED, f"Quantity specified is more than quantity of"
-                                                  f" item with Product ID '{product_id}'"
-                                                  "currently in database.")
-    elif ordered_quantity == existing_record.quantity:
-        new_record.quantity = 0
-        new_record.active = False
-    else:
-        new_record.quantity = existing_record.quantity - ordered_quantity
-
-    existing_record.update(new_record)
+    existing_record.checkout(data)
     return jsonify(existing_record.serialize()), status.HTTP_200_OK
 
 ######################################################################
@@ -223,7 +206,6 @@ def check_content_type(content_type):
         status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
         f"Content-Type must be {content_type}",
     )
-
 
 def find_from_request_json(request_body):
     '''Fetch relevant items based on product ID and condition'''
