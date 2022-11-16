@@ -88,6 +88,7 @@ class TestInventory(unittest.TestCase):
         }
         record = Inventory()
         record.deserialize(data)
+        logging.debug(record)
         self.assertEqual(record.product_id, 1)
         self.assertEqual(record.name, "monitor")
         self.assertEqual(record.condition, Inventory.Condition.NEW)

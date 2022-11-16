@@ -106,7 +106,7 @@ class Inventory(db.Model):
             data (dict): A dictionary containing the resource data
         """
         try:
-            if not isinstance(data, dict):
+            if not isinstance(data, dict) or data == {}:
                 raise TypeError
             self.deserialize_util(data)
         except KeyError as error:
@@ -176,6 +176,24 @@ class Inventory(db.Model):
         new_record = Inventory()
         new_record.quantity = self.quantity - ordered_quantity
         self.update(new_record)
+    
+    def check_primary_key_valid(self, data):
+        """Checks if primary key is valid or not
+
+        Args:
+            data (dict): passed data
+
+        Returns:
+            bool: True if PK is valid else False
+        """
+        if data.get("product_id") != None and data.get("condition") != None:
+            if type(data.get("product_id")) is int and type(data.get("condition")) is str:
+                self.product_id = data.get("product_id")
+                self.condition = self.Condition(data.get("condition"))
+
+                return True
+        else:
+            return False
     
     @classmethod
     def init_db(cls, app: Flask):
