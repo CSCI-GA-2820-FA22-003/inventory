@@ -2,7 +2,7 @@
 REGISTRY ?= us.icr.io
 NAMESPACE ?= nyu_devops_inventory
 IMAGE_NAME ?= inventory
-IMAGE_TAG ?= 1.4
+IMAGE_TAG ?= 1.8
 IMAGE ?= $(REGISTRY)/$(NAMESPACE)/$(IMAGE_NAME):$(IMAGE_TAG)
 # PLATFORM ?= "linux/amd64,linux/arm64"
 PLATFORM ?= "linux/amd64"
@@ -52,8 +52,7 @@ run: ## Run the service
 .PHONY: deploy
 deploy: ## Deploy the service on local Kubernetes
 	$(info Deploying service locally...)
-	kubectl apply -f deploy/postgresql.yaml
-	kubectl apply -f deploy/deployment.yaml
+	kubectl apply -f deploy/deployment.yaml --namespace=dev
 	kubectl apply -f deploy/service-dev.yaml --namespace=dev
 	kubectl apply -f deploy/service-prod.yaml --namespace=prod
 
