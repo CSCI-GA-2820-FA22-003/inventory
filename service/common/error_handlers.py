@@ -18,7 +18,7 @@
 Module: error_handlers
 """
 from flask import jsonify
-from service.models import DataValidationError, OutOfRangeError
+from service.models import DataValidationError, OutOfRangeError, InactiveRecordError
 from service import app
 from . import status
 
@@ -37,6 +37,10 @@ def request_out_of_range_error(error):
     """Handles Value Errors from bad data"""
     return bad_request(error)
 
+@app.errorhandler(InactiveRecordError)
+def request_inactive_record_error(error):
+    """Handles Inactive record Errors from bad data"""
+    return bad_request(error)
 
 @app.errorhandler(status.HTTP_400_BAD_REQUEST)
 def bad_request(error):

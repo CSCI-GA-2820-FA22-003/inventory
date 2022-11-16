@@ -150,28 +150,33 @@ class Inventory(db.Model):
                 if data.get(field) < 0:
                     raise ValueError
                 setattr(self, field, data.get(field))
-    
+
     def checkout(self, data):
         """ Checkout ordered_quantity from record
 
         Args:
             data (dict): A dictionary containing the resource data
         """
+        ordered_quantity = data.get('ordered_quantity')
         try:
             if self.active == False:
+                raise TypeError
+            if ordered_quantity == None or type(ordered_quantity) is not int:
                 raise DataValidationError
+            if ordered_quantity > self.quantity:
+                raise ValueError
+        except ValueError as error:
+            raise OutOfRangeError(f'Quantity specified ({ordered_quantity}) '
+                f'is more than quantity of record ({self.quantity}).') from error
+        except TypeError as error:
+            raise InactiveRecordError('Record is inactive.') from error
         except DataValidationError as error:
-            raise InactiveRecordError from error
-        ordered_quantity = data['ordered_quantity']
-        if ordered_quantity > self.quantity:
-            raise OutOfRangeError(f'Quantity specified ({ordered_quantity}) is more than quantity of record ({self.quantity}).')
-        else:
-            new_record = Inventory()
-            new_record.quantity = self.quantity - ordered_quantity
+            raise OutOfRangeError("Ordered quantity is missing or not int.") from error
+
+        new_record = Inventory()
+        new_record.quantity = self.quantity - ordered_quantity
         self.update(new_record)
-
-
-
+    
     @classmethod
     def init_db(cls, app: Flask):
         """ Initializes the database session """

@@ -556,7 +556,6 @@ class TestInventory(TestCase):
                                    json=request_dict)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         temp = response.get_json()
-        logging.debug(temp)
         self.assertEqual(temp['quantity'], 0)
         self.assertEqual(temp['active'], False)
 

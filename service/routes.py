@@ -76,7 +76,11 @@ def create_inventory_records():
     check_content_type("application/json")
     inventory = Inventory()
     data = request.get_json()
-    inventory.deserialize(data)
+
+    # TODO: check if status code is correctly passed below
+    if check_primary_key_valid(data) == False:
+        abort(status.HTTP_409_CONFLICT, "Primary key missing/invalid")
+    inventory.deserialize(data) 
 
     existing_inventory = Inventory.find((inventory.product_id, inventory.condition))
     if existing_inventory:
@@ -207,6 +211,20 @@ def check_content_type(content_type):
         f"Content-Type must be {content_type}",
     )
 
+def check_primary_key_valid(data):
+    """Checks if primary key is valid or not
+
+    Args:
+        data (dict): passed data
+
+    Returns:
+        bool: True if PK is valid else False
+    """
+    if data.get("product_id") != None and data.get("condtion") != None:
+        if type(data.product_id) is int and type(data.condition) is str:
+            return True
+    else:
+        return False
 
 def find_from_request_json(request_body):
     '''Fetch relevant items based on product ID and condition'''
