@@ -216,7 +216,7 @@ class TestInventory(unittest.TestCase):
 
         data = {}
         data["ordered_quantity"] = "1"
-        self.assertRaises(OutOfRangeError, record.checkout, data)
+        self.assertRaises(DataValidationError, record.checkout, data)
     
     def test_checkout_exceed_exeception(self):
         """Test for checkout exceed exception"""
@@ -229,3 +229,25 @@ class TestInventory(unittest.TestCase):
         data = {}
         data["ordered_quantity"] = original_quantity + 1
         self.assertRaises(OutOfRangeError, record.checkout, data)
+
+
+    def test_reorder(self):
+        """Test for reorder success"""
+        record = InventoryFactory()
+        record.create()
+        record.active = True
+        self.assertIsNotNone(record.product_id)
+
+        # reorder succeeds
+        original_quantity = record.quantity
+        data = {"ordered_quantity": 1}
+        record.reorder(data)
+        self.assertEqual(record.quantity - original_quantity, 1)
+
+        # reorder fails with invalid data type
+        self.assertRaises(DataValidationError, record.reorder, {})
+        self.assertRaises(DataValidationError, record.reorder, {"ordered_quantity": "1"})
+
+        # reorder fails when record is inactive
+        record.active = False
+        self.assertRaises(InactiveRecordError, record.reorder, data)

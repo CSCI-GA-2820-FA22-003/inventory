@@ -534,6 +534,32 @@ class TestInventory(TestCase):
                                    json=request_dict)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
     
+
+    def test_reorder(self):
+        """"Test for cases when reorder endpoint is called"""
+        record = InventoryFactory()
+        record.active = True
+        response = self.client.post(BASE_URL, json=record.serialize())
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        request_body = {"ordered_quantity": 1}
+        expected_data = record.serialize()
+        expected_data["quantity"] += request_body["ordered_quantity"]
+
+        # success: 200
+        url = f"{BASE_URL}/reorder/{record.product_id}/{record.condition.name}"
+        response = self.client.put(url, json=request_body)
+        actual_data = response.get_json()
+
+        self.assertEqual(actual_data, expected_data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # product not found: 404
+        url = f"{BASE_URL}/reorder/{record.product_id+1}/{record.condition.name}"
+        response = self.client.put(url, json=request_body)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+
     # def test_checkout_success(self):
     #     """Test for cases when the checkout feature executes successfully
     #     when ordered quantity is less than quantity of item in the database"""
