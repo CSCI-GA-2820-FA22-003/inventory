@@ -155,6 +155,7 @@ class Inventory(db.Model):
                     raise ValueError
                 setattr(self, field, data.get(field))
 
+
     def checkout(self, data):
         """ Checkout ordered_quantity from record
 
@@ -162,25 +163,49 @@ class Inventory(db.Model):
             data (dict): A dictionary containing the resource data
         """
         ordered_quantity = data.get('ordered_quantity')
+        self.validate_ordered_quantity(ordered_quantity)
         try:
-            if self.active == False:
-                raise TypeError
-            if ordered_quantity == None or type(ordered_quantity) is not int:
-                raise DataValidationError
             if ordered_quantity > self.quantity:
                 raise ValueError
         except ValueError as error:
             raise OutOfRangeError(f'Quantity specified ({ordered_quantity}) '
                 f'is more than quantity of record ({self.quantity}).') from error
-        except TypeError as error:
-            raise InactiveRecordError('Record is inactive.') from error
-        except DataValidationError as error:
-            raise OutOfRangeError("Ordered quantity is missing or not int.") from error
 
         new_record = Inventory()
         new_record.quantity = self.quantity - ordered_quantity
         self.update(new_record)
     
+
+    def reorder(self, data):
+        """ Reorder ordered_quantity from record
+
+        Args:
+            data (dict): A dictionary containing the resource data
+        """
+        ordered_quantity = data.get('ordered_quantity')
+        self.validate_ordered_quantity(ordered_quantity)
+        self.quantity += ordered_quantity
+        db.session.commit()
+
+
+    def validate_ordered_quantity(self, ordered_quantity):
+        """Validate ordered quantity for type and and check active-ness of record
+        before apply actions; either reorder or checkout.
+
+        Args:
+            ordered_quantity (int): Value by which quantity should be increased.
+        """
+        try:
+            if self.active is False:
+                raise TypeError
+            if ordered_quantity is None or not isinstance(ordered_quantity, int):
+                raise ValueError
+        except TypeError as error:
+            raise InactiveRecordError('Record is inactive.') from error
+        except ValueError as error:
+            raise DataValidationError("Ordered quantity is missing or not int.") from error
+
+
     def check_primary_key_valid(self, data):
         """Checks if primary key is valid or not
 

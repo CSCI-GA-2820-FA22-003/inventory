@@ -184,6 +184,20 @@ def checkout_quantity(product_id, condition):
     existing_record.checkout(data)
     return jsonify(existing_record.serialize()), status.HTTP_200_OK
 
+
+@app.route("/inventory/reorder/<int:product_id>/<condition>", methods=["PUT"])
+def reorder_quantity(product_id, condition):
+    """Increases quantity from inventory of a particular item based on the amount specified by user"""
+    app.logger.info(f"Reorder called for product id: {product_id}, condition: {condition}")
+
+    data = request.get_json()
+    existing_record = Inventory.find((product_id, condition))
+    if not existing_record:
+        abort(status.HTTP_404_NOT_FOUND, f"Product with id '{product_id}' was not found.")
+    existing_record.reorder(data)
+    return jsonify(existing_record.serialize()), status.HTTP_200_OK
+
+
 ######################################################################
 #  U T I L I T Y   F U N C T I O N S
 ######################################################################
@@ -206,9 +220,3 @@ def check_content_type(content_type):
         status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
         f"Content-Type must be {content_type}",
     )
-
-def find_from_request_json(request_body):
-    '''Fetch relevant items based on product ID and condition'''
-    inventory = Inventory()
-    inventory.deserialize(request_body)
-    return Inventory.find((inventory.product_id, inventory.condition))
