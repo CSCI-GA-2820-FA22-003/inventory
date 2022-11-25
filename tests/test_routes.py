@@ -415,7 +415,7 @@ class TestInventory(TestCase):
             "Quantity=%s: %d = %s", test_quantity, len(quantity_list), quantity_list
         )
         resp = self.client.get(BASE_URL, query_string=f"quantity={str(test_quantity)}&operator={test_operator}")
-        if(len(quantity_list)>0):
+        if len(quantity_list) > 0:
             self.assertEqual(resp.status_code, status.HTTP_200_OK)
             data = resp.get_json()
             self.assertEqual(len(data), len(quantity_list))
@@ -423,7 +423,7 @@ class TestInventory(TestCase):
             for record in data:
                 self.assertLess(record["quantity"], test_quantity)
         else:
-            self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+            self.assertEqual(resp.status_code, status.HTTP_200_OK)
 
     def test_query_inventories_by_less_than_equal_quantity(self):
         """It should Query Inventories by Less Than Equal to Quantity Individually"""
