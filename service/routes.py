@@ -13,6 +13,7 @@ from . import app
 
 app.url_map.strict_slashes = False
 
+
 @app.route("/health", methods=["GET"])
 def health():
     """ Health endpoint """
@@ -49,14 +50,14 @@ def init_db():
 
 
 @app.route("/inventory/<int:product_id>/<condition>", methods=["GET"])
-def get_inventory_records(product_id,condition):
+def get_inventory_records(product_id, condition):
     """
     Retrieve a single record
     This endpoint will return a record based on it's product id and condition
     """
     # fetch the condition from the payload of the data
     app.logger.info("Reading the given record")
-    
+
     inventory = Inventory.find((product_id, condition))
 
     if not inventory:
@@ -79,7 +80,7 @@ def create_inventory_records():
     data = request.get_json()
 
     # TODO: check if status code is correctly passed below
-    if inventory.check_primary_key_valid(data) == False:
+    if not inventory.check_primary_key_valid(data):
         abort(status.HTTP_409_CONFLICT, "Primary key missing/invalid")
     inventory.deserialize(data)
 
@@ -91,9 +92,11 @@ def create_inventory_records():
         abort(status.HTTP_409_CONFLICT, error)
 
     inventory.create()
-    location_url = url_for("get_inventory_records", product_id=inventory.product_id, condition=inventory.condition, _external=True)
+    location_url = url_for("get_inventory_records",
+                           product_id=inventory.product_id,
+                           condition=inventory.condition, _external=True)
     statement = f"Inventory product with ID {inventory.product_id}" \
-    f"and condition: {inventory.condition} created."
+                f"and condition: {inventory.condition} created."
     app.logger.info(statement)
     # return jsonify(inventory.serialize()), status.HTTP_201_CREATED
 
