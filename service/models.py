@@ -23,8 +23,10 @@ def init_db(app):
 class DataValidationError(Exception):
     """ Used for an data validation errors when deserializing """
 
+
 class InactiveRecordError(Exception):
     """ Used when record is inactive"""
+
 
 class OutOfRangeError(Exception):
     """ Used for an data validation errors when deserializing """
@@ -71,14 +73,14 @@ class Inventory(db.Model):
 
     def update(self, new_data):
         """ Updates a Inventory to the database """
-        if new_data.active != None:
+        if new_data.active is not None:
             self.active = new_data.active
-        if new_data.quantity != None:
+        if new_data.quantity is not None:
             self.quantity = new_data.quantity
         self.name = new_data.name or self.name
-        if new_data.reorder_quantity != None:
+        if new_data.reorder_quantity is not None:
             self.reorder_quantity = new_data.reorder_quantity
-        if new_data.restock_level != None:
+        if new_data.restock_level is not None:
             self.restock_level = new_data.restock_level
         self.updated_at = datetime.utcnow()
         logger.info("Saving %s", self.name)
@@ -118,12 +120,13 @@ class Inventory(db.Model):
             ) from error
         except TypeError as error:
             raise DataValidationError(
-                f'Invalid Inventory: body of request contained bad or no data'\
+                'Invalid Inventory: body of request contained bad or no data\n'
                 f'Error message: {error}'
             ) from error
         except ValueError as error:
             raise OutOfRangeError(
-                f'Invalid Inventory: body of request contained values out of range'\
+                'Invalid Inventory: body of request contained values'
+                ' out of range\n'
                 f'Error message: {error}'
             ) from error
         return self
@@ -155,7 +158,6 @@ class Inventory(db.Model):
                     raise ValueError
                 setattr(self, field, data.get(field))
 
-
     def checkout(self, data):
         """ Checkout ordered_quantity from record
 
@@ -169,12 +171,12 @@ class Inventory(db.Model):
                 raise ValueError
         except ValueError as error:
             raise OutOfRangeError(f'Quantity specified ({ordered_quantity}) '
-                f'is more than quantity of record ({self.quantity}).') from error
+                                  'is more than quantity of record '
+                                  f'({self.quantity}).') from error
 
         new_record = Inventory()
         new_record.quantity = self.quantity - ordered_quantity
         self.update(new_record)
-    
 
     def reorder(self, data):
         """ Reorder ordered_quantity from record
@@ -187,11 +189,9 @@ class Inventory(db.Model):
         self.quantity += ordered_quantity
         db.session.commit()
 
-
     def validate_ordered_quantity(self, ordered_quantity):
         """Validate ordered quantity for type and and check active-ness of record
         before apply actions; either reorder or checkout.
-
         Args:
             ordered_quantity (int): Value by which quantity should be increased.
         """
@@ -205,7 +205,6 @@ class Inventory(db.Model):
         except ValueError as error:
             raise DataValidationError("Ordered quantity is missing or not int.") from error
 
-
     def check_primary_key_valid(self, data):
         """Checks if primary key is valid or not
 
@@ -215,14 +214,21 @@ class Inventory(db.Model):
         Returns:
             bool: True if PK is valid else False
         """
-        if data.get("product_id") != None and data.get("condition") != None:
-            if type(data.get("product_id")) is int and type(data.get("condition")) is str:
-                self.product_id = data.get("product_id")
-                self.condition = self.Condition(data.get("condition"))
-                return True
+        pid_check = True if data.get("product_id") is not None else False
+        cond_check = True if data.get("condition") is not None else False
+        if pid_check and cond_check:
+            if isinstance(data.get("product_id"), int):
+                if isinstance(data.get("condition"), str):
+                    self.product_id = data.get("product_id")
+                    self.condition = self.Condition(data.get("condition"))
+                    return True
+                else:
+                    return False
+            else:
+                return False
         else:
             return False
-    
+
     @classmethod
     def init_db(cls, app: Flask):
         """ Initializes the database session """

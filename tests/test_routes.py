@@ -207,6 +207,7 @@ class TestInventory(TestCase):
 
 
     def test_list_inventory_records(self):
+        """Test to successfully list all inventory records"""
         expected_records = self._create_inventory_records(2)
         expected_response = [record.serialize() for record in expected_records]
         response = self.client.get(BASE_URL)
@@ -285,6 +286,7 @@ class TestInventory(TestCase):
 
 
     def test_read_records(self):
+        """Test to read a record successfully existing from within database"""
         record = self._create_inventory_records(1)[0]
         record.name = None
         record.quantity  = None
@@ -299,6 +301,7 @@ class TestInventory(TestCase):
 
 
     def test_read_non_existent_records(self):
+        """Test to attempt reading records that do not exist in the database"""
         record = self._create_inventory_records(1)[0]
         record.product_id = record.product_id + 1
         record.name = None

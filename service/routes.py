@@ -13,6 +13,7 @@ from . import app
 
 app.url_map.strict_slashes = False
 
+
 @app.route("/health", methods=["GET"])
 def health():
     """ Health endpoint """
@@ -27,14 +28,15 @@ def health():
 def index():
     """ Root URL response """
     app.logger.info("Request for Root URL")
-    return (
-        jsonify(
-            name="Inventory Demo REST API Service",
-            version="1.0",
-            paths=url_for("list_inventory_records", _external=True),
-        ),
-        status.HTTP_200_OK
-    )
+    return app.send_static_file("index.html")
+    # return (
+    #     jsonify(
+    #         name="Inventory Demo REST API Service",
+    #         version="1.0",
+    #         paths=url_for("list_inventory_records", _external=True),
+    #     ),
+    #     status.HTTP_200_OK
+    # )
 
 
 ######################################################################
@@ -48,14 +50,14 @@ def init_db():
 
 
 @app.route("/inventory/<int:product_id>/<condition>", methods=["GET"])
-def get_inventory_records(product_id,condition):
+def get_inventory_records(product_id, condition):
     """
     Retrieve a single record
     This endpoint will return a record based on it's product id and condition
     """
     # fetch the condition from the payload of the data
     app.logger.info("Reading the given record")
-    
+
     inventory = Inventory.find((product_id, condition))
 
     if not inventory:
@@ -78,7 +80,7 @@ def create_inventory_records():
     data = request.get_json()
 
     # TODO: check if status code is correctly passed below
-    if inventory.check_primary_key_valid(data) == False:
+    if not inventory.check_primary_key_valid(data):
         abort(status.HTTP_409_CONFLICT, "Primary key missing/invalid")
     inventory.deserialize(data)
 
@@ -90,9 +92,11 @@ def create_inventory_records():
         abort(status.HTTP_409_CONFLICT, error)
 
     inventory.create()
-    location_url = url_for("get_inventory_records", product_id=inventory.product_id, condition=inventory.condition, _external=True)
+    location_url = url_for("get_inventory_records",
+                           product_id=inventory.product_id,
+                           condition=inventory.condition, _external=True)
     statement = f"Inventory product with ID {inventory.product_id}" \
-    f"and condition: {inventory.condition} created."
+                f"and condition: {inventory.condition} created."
     app.logger.info(statement)
     # return jsonify(inventory.serialize()), status.HTTP_201_CREATED
 
@@ -142,7 +146,7 @@ def list_inventory_records():
     return jsonify(results), status.HTTP_200_OK
 
 
-@app.route("/inventory/<product_id>/<condition>", methods=["DELETE"])
+@app.route("/inventory/<product_id>/<string:condition>", methods=["DELETE"])
 def delete_inventory_record(product_id, condition):
     """Deletes inventory record
 
@@ -157,7 +161,7 @@ def delete_inventory_record(product_id, condition):
     return "", status.HTTP_204_NO_CONTENT
 
 
-@app.route("/inventory/<int:product_id>/<condition>", methods=["PUT"])
+@app.route("/inventory/<int:product_id>/<string:condition>", methods=["PUT"])
 def update_inventory_records(product_id, condition):
     """Updates an existing inventory record given that it is present in the database table"""
     app.logger.info("Update an inventory record")
@@ -174,7 +178,7 @@ def update_inventory_records(product_id, condition):
     return jsonify(existing_record.serialize()), status.HTTP_200_OK
 
 
-@app.route("/inventory/checkout/<int:product_id>/<condition>", methods=["PUT"])
+@app.route("/inventory/checkout/<int:product_id>/<string:condition>", methods=["PUT"])
 def checkout_quantity(product_id, condition):
     """Reduces quantity from inventory of a particular item based on the amount specified by user"""
     data = request.get_json()
@@ -185,7 +189,7 @@ def checkout_quantity(product_id, condition):
     return jsonify(existing_record.serialize()), status.HTTP_200_OK
 
 
-@app.route("/inventory/reorder/<int:product_id>/<condition>", methods=["PUT"])
+@app.route("/inventory/reorder/<int:product_id>/<string:condition>", methods=["PUT"])
 def reorder_quantity(product_id, condition):
     """Increases quantity from inventory of a particular item based on the amount specified by user"""
     app.logger.info(f"Reorder called for product id: {product_id}, condition: {condition}")
