@@ -44,12 +44,12 @@ $(function () {
 
     $("#create-btn").click(function () {
 
-        let product_id = $("#product_id").val();
+        let product_id = parseInt($("#product_id").val());
         let condition = $("#condition").val();
         let name = $("#name").val();
-        let quantity = $("#quantity").val();
-        let reorder_quantity = $("#reorder_quantity").val();
-        let restock_level = $("#restock_level").val();
+        let quantity = parseInt($("#quantity").val());
+        let reorder_quantity = parseInt($("#reorder_quantity").val());
+        let restock_level = parseInt($("#restock_level").val());
         let active = $("#active").val() == "true";
 
         let data = {
@@ -88,12 +88,13 @@ $(function () {
 
     $("#update-btn").click(function () {
 
-        let product_id = $("#product_id").val();
+        let product_id = parseInt($("#product_id").val());
         let condition = $("#condition").val();
+        condition = condition.toUpperCase();
         let name = $("#name").val();
-        let quantity = $("#quantity").val();
-        let reorder_quantity = $("#reorder_quantity").val();
-        let restock_level = $("#restock_level").val();
+        let quantity = parseInt($("#quantity").val());
+        let reorder_quantity = parseInt($("#reorder_quantity").val());
+        let restock_level = parseInt($("#restock_level").val());
         let active = $("#active").val() == "true";
 
         let data = {
@@ -132,8 +133,9 @@ $(function () {
 
     $("#read-btn").click(function () {
 
-        let product_id = $("#product_id").val();
+        let product_id = parseInt($("#product_id").val());
         let condition = $("#condition").val();
+        condition = condition.toUpperCase();
 
         $("#flash_message").empty();
 
@@ -163,8 +165,9 @@ $(function () {
 
     $("#delete-btn").click(function () {
 
-        let product_id = $("#product_id").val();
+        let product_id = parseInt($("#product_id").val());
         let condition = $("#condition").val();
+        condition = condition.toUpperCase();
 
         $("#flash_message").empty();
 
@@ -190,9 +193,14 @@ $(function () {
     // ****************************************
 
     $("#checkout-btn").click(function() {
-        let product_id = $("#product_id").val();
+        let product_id = parseInt($("#product_id").val());
         let condition = $("#condition").val();
-        let ordered_quantity = $("#ordered_quantity").val();
+        condition = condition.toUpperCase();
+        let ordered_quantity = parseInt($("#ordered_quantity").val());
+
+        let data = {
+            "ordered_quantity": ordered_quantity
+        }
 
         $("#flash_message").empty();
 
@@ -200,12 +208,45 @@ $(function () {
             type: "PUT",
             url: `/inventory/checkout/${product_id}/${condition}`,
             contentType: "application/json",
-            data: '',
+            data: JSON.stringify(data),
         })
 
         ajax.done(function(res){
             clear_form_data()
-            flash_message("Pet has been Deleted!")
+            flash_message("Product has been checked out from Inventory!")
+        });
+
+        ajax.fail(function(res){
+            flash_message("Server error!")
+        });
+    });
+
+    // ****************************************
+    // Reorder a Product
+    // ****************************************
+
+    $("#reorder-btn").click(function() {
+        let product_id = parseInt($("#product_id").val());
+        let condition = $("#condition").val();
+        condition = condition.toUpperCase();
+        let ordered_quantity = parseInt($("#ordered_quantity").val());
+
+        let data = {
+            "ordered_quantity": ordered_quantity
+        }
+
+        $("#flash_message").empty();
+
+        let ajax = $.ajax({
+            type: "PUT",
+            url: `/inventory/reorder/${product_id}/${condition}`,
+            contentType: "application/json",
+            data: JSON.stringify(data),
+        })
+
+        ajax.done(function(res){
+            clear_form_data()
+            flash_message("Product has been reordered!")
         });
 
         ajax.fail(function(res){
