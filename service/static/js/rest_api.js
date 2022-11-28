@@ -99,7 +99,6 @@ $(function () {
 
         let data = {
             "product_id": product_id,
-            "condition": condition,
             "name": name,
             "quantity": quantity,
             "reorder_quantity": reorder_quantity,
