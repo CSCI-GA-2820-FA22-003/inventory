@@ -180,7 +180,7 @@ $(function () {
 
         ajax.done(function(res){
             clear_form_data()
-            flash_message("Pet has been Deleted!")
+            flash_message("Product has been Deleted!")
         });
 
         ajax.fail(function(res){
@@ -265,7 +265,7 @@ $(function () {
     });
 
     // ****************************************
-    // Search for a Pet
+    // Search for a Product
     // ****************************************
 
     // $("#search-btn").click(function () {

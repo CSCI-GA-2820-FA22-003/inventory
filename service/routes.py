@@ -146,7 +146,7 @@ def list_inventory_records():
     return jsonify(results), status.HTTP_200_OK
 
 
-@app.route("/inventory/<product_id>/<condition>", methods=["DELETE"])
+@app.route("/inventory/<product_id>/<string:condition>", methods=["DELETE"])
 def delete_inventory_record(product_id, condition):
     """Deletes inventory record
 
@@ -161,7 +161,7 @@ def delete_inventory_record(product_id, condition):
     return "", status.HTTP_204_NO_CONTENT
 
 
-@app.route("/inventory/<int:product_id>/<condition>", methods=["PUT"])
+@app.route("/inventory/<int:product_id>/<string:condition>", methods=["PUT"])
 def update_inventory_records(product_id, condition):
     """Updates an existing inventory record given that it is present in the database table"""
     app.logger.info("Update an inventory record")
@@ -178,7 +178,7 @@ def update_inventory_records(product_id, condition):
     return jsonify(existing_record.serialize()), status.HTTP_200_OK
 
 
-@app.route("/inventory/checkout/<int:product_id>/<condition>", methods=["PUT"])
+@app.route("/inventory/checkout/<int:product_id>/<string:condition>", methods=["PUT"])
 def checkout_quantity(product_id, condition):
     """Reduces quantity from inventory of a particular item based on the amount specified by user"""
     data = request.get_json()
@@ -189,7 +189,7 @@ def checkout_quantity(product_id, condition):
     return jsonify(existing_record.serialize()), status.HTTP_200_OK
 
 
-@app.route("/inventory/reorder/<int:product_id>/<condition>", methods=["PUT"])
+@app.route("/inventory/reorder/<int:product_id>/<string:condition>", methods=["PUT"])
 def reorder_quantity(product_id, condition):
     """Increases quantity from inventory of a particular item based on the amount specified by user"""
     app.logger.info(f"Reorder called for product id: {product_id}, condition: {condition}")
