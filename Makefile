@@ -2,7 +2,7 @@
 REGISTRY ?= us.icr.io
 NAMESPACE ?= nyu_devops_inventory
 IMAGE_NAME ?= inventory
-IMAGE_TAG ?= 1.8
+IMAGE_TAG ?= 1.9
 IMAGE ?= $(REGISTRY)/$(NAMESPACE)/$(IMAGE_NAME):$(IMAGE_TAG)
 # PLATFORM ?= "linux/amd64,linux/arm64"
 PLATFORM ?= "linux/amd64"
