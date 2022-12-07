@@ -26,6 +26,7 @@ $(function () {
         $("#condition").val("");
         $("#name").val("");
         $("#quantity").val("");
+        $("#operator").val("");
         $("#reorder_quantity").val("");
         $("#restock_level").val("");
         $("#active").val("");
@@ -88,6 +89,7 @@ $(function () {
 
     $("#update-btn").click(function () {
 
+        
         let product_id = parseInt($("#product_id").val());
         let condition = $("#condition").val();
         condition = condition.toUpperCase();
@@ -267,78 +269,98 @@ $(function () {
     // Search for a Product
     // ****************************************
 
-    // $("#search-btn").click(function () {
+    $("#search-btn").click(function () {
 
-    //     let name = $("#pet_name").val();
-    //     let category = $("#pet_category").val();
-    //     let available = $("#pet_available").val() == "true";
+        
+        let condition = $("#condition").val();
+        let name = $("#name").val();
+        let quantity = parseInt($("#quantity").val());
+        let operator = $("#operator").val();
+        let active = $("#active").val() == "true";
 
-    //     let queryString = ""
 
-    //     if (name) {
-    //         queryString += 'name=' + name
-    //     }
-    //     if (category) {
-    //         if (queryString.length > 0) {
-    //             queryString += '&category=' + category
-    //         } else {
-    //             queryString += 'category=' + category
-    //         }
-    //     }
-    //     if (available) {
-    //         if (queryString.length > 0) {
-    //             queryString += '&available=' + available
-    //         } else {
-    //             queryString += 'available=' + available
-    //         }
-    //     }
+        let queryString = ""
 
-    //     $("#flash_message").empty();
+        if (name) {
+            queryString += 'name=' + name
+        }
+        if (condition) {
+            if (queryString.length > 0) {
+                queryString += '&condition=' + condition
+            } else {
+                queryString += 'condition=' + condition
+            }
+        }
+        if (quantity) {
+            if (queryString.length > 0) {
+                queryString += '&quantity=' + quantity
+            } else {
+                queryString += 'quantity=' + quantity
+            }
 
-    //     let ajax = $.ajax({
-    //         type: "GET",
-    //         url: `/pets?${queryString}`,
-    //         contentType: "application/json",
-    //         data: ''
-    //     })
+            if (operator) {
+                if (queryString.length > 0) {
+                    queryString += '&operator=' + operator
+                } else {
+                    queryString += 'operator=' + operator
+                }
+            }
 
-    //     ajax.done(function(res){
-    //         //alert(res.toSource())
-    //         $("#search_results").empty();
-    //         let table = '<table class="table table-striped" cellpadding="10">'
-    //         table += '<thead><tr>'
-    //         table += '<th class="col-md-2">ID</th>'
-    //         table += '<th class="col-md-2">Name</th>'
-    //         table += '<th class="col-md-2">Category</th>'
-    //         table += '<th class="col-md-2">Available</th>'
-    //         table += '<th class="col-md-2">Gender</th>'
-    //         table += '<th class="col-md-2">Birthday</th>'
-    //         table += '</tr></thead><tbody>'
-    //         let firstPet = "";
-    //         for(let i = 0; i < res.length; i++) {
-    //             let pet = res[i];
-    //             table +=  `<tr id="row_${i}"><td>${pet.id}</td><td>${pet.name}</td><td>${pet.category}</td><td>${pet.available}</td><td>${pet.gender}</td><td>${pet.birthday}</td></tr>`;
-    //             if (i == 0) {
-    //                 firstPet = pet;
-    //             }
-    //         }
-    //         table += '</tbody></table>';
-    //         $("#search_results").append(table);
+        }
+        
+        if (active) {
+            if (queryString.length > 0) {
+                queryString += '&active=' + active
+            } else {
+                queryString += 'active=' + active
+            }
+        }
 
-    //         // copy the first result to the form
-    //         if (firstPet != "") {
-    //             update_form_data(firstPet)
-    //         }
+        $("#flash_message").empty();
 
-    //         flash_message("Success")
-    //     });
+        let ajax = $.ajax({
+            type: "GET",
+            url: `/inventory?${queryString}`,
+            contentType: "application/json",
+            data: ''
+        })
 
-    //     ajax.fail(function(res){
-    //         flash_message(res.responseJSON.message)
-    //     });
+        ajax.done(function(res){
+            //alert(res.toSource())
+            $("#search_results").empty();
+            let table = '<table class="table table-striped" cellpadding="10">'
+            table += '<thead><tr>'
+            table += '<th class="col-md-2">Product ID</th>'
+            table += '<th class="col-md-2">Condition</th>'
+            table += '<th class="col-md-2">Name</th>'
+            table += '<th class="col-md-2">Quantity</th>'
+            table += '<th class="col-md-2">Reorder Quantity</th>'
+            table += '<th class="col-md-2">Restock Level</th>'
+            table += '<th class="col-md-2">Active</th>'
+            table += '</tr></thead><tbody>'
+            let firstRecord = "";
+            for(let i = 0; i < res.length; i++) {
+                let record = res[i];
+                table +=  `<tr id="row_${i}"><td>${record.product_id}</td><td>${record.condition}</td><td>${record.name}</td><td>${record.quantity}</td><td>${record.reorder_quantity}</td><td>${record.restock_level}</td><td>${record.active}</td></tr>`;
+                if (i == 0) {
+                    firstRecord = record;
+                }
+            }
+            table += '</tbody></table>';
+            $("#search_results").append(table);
 
-    // });
+            // copy the first result to the form
+            if (firstRecord != "") {
+                update_form_data(firstPet)
+            }
 
-    
+            flash_message("Success")
+        });
+
+        ajax.fail(function(res){
+            flash_message(res.responseJSON.message)
+        });
+
+    });
 
 })
