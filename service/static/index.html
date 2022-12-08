@@ -66,8 +66,18 @@
             <!-- Operator -->
             <div class="form-group">
               <label class="control-label col-sm-2" for="operator">Comparison Operator:</label>
-              <div class="col-sm-10">
+              <!-- <div class="col-sm-10">
                 <input type="text" class="form-control" id="operator" placeholder="Enter comparison operator ONLY used for searching any product in comparison to entered quantity">
+              </div> -->
+              <div class="col-sm-10">
+                <select class="form-control" id="operator" placeholder="Enter comparison operator ONLY used for searching any product in comparison to entered quantity">
+                  <option value="" selected>None</option>
+                  <option value="=">=</option>
+                  <option value=">=">>=</option>
+                  <option value="<="><=</option>
+                  <option value="<"><</option>
+                  <option value=">">></option>
+                </select>
               </div>
             </div>
 
