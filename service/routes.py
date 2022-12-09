@@ -114,7 +114,13 @@ def list_inventory_records():
     condition = request.args.get("condition")
     quantity = request.args.get("quantity")
     operator = request.args.get("operator")
+
     active = request.args.get("active")
+    if active is not None:
+        if active == 'True':
+            active = True
+        else:
+            active = False
 
     if name:
         app.logger.info("Filtering by name: %s", name)
@@ -129,7 +135,7 @@ def list_inventory_records():
         app.logger.info("Filtering by quantity: %s", quantity)
         feature_flag = True
         req["quantity"] = (quantity, operator)
-    if active:
+    if active is not None:
         app.logger.info("Filtering by available: %s", active)
         feature_flag = True
         req["active"] = active
