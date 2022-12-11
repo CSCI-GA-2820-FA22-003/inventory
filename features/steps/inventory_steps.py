@@ -40,7 +40,7 @@ class Condition(enum.Enum):
 def step_impl(context):
     """ Delete all Pets and load new ones """
     # List all of the pets and delete them one by one
-    rest_endpoint = f"{context.BASE_URL}/inventory"
+    rest_endpoint = f"{context.BASE_URL}/api/inventory"
     logging.info(rest_endpoint)
     context.resp = requests.get(rest_endpoint)
     # logging.info(context.resp)

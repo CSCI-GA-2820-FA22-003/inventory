@@ -67,7 +67,7 @@ $(function () {
         
         let ajax = $.ajax({
             type: "POST",
-            url: `/inventory`,
+            url: `/api/inventory`,
             contentType: "application/json",
             data: JSON.stringify(data),
         });
@@ -112,7 +112,7 @@ $(function () {
 
         let ajax = $.ajax({
                 type: "PUT",
-                url: `/inventory/${product_id}/${condition}`,
+                url: `/api/inventory/${product_id}/${condition}`,
                 contentType: "application/json",
                 data: JSON.stringify(data)
             })
@@ -142,7 +142,7 @@ $(function () {
 
         let ajax = $.ajax({
             type: "GET",
-            url: `/inventory/${product_id}/${condition}`,
+            url: `/api/inventory/${product_id}/${condition}`,
             contentType: "application/json",
             data: ''
         })
@@ -174,7 +174,7 @@ $(function () {
 
         let ajax = $.ajax({
             type: "DELETE",
-            url: `/inventory/${product_id}/${condition}`,
+            url: `/api/inventory/${product_id}/${condition}`,
             contentType: "application/json",
             data: '',
         })
@@ -207,7 +207,7 @@ $(function () {
 
         let ajax = $.ajax({
             type: "PUT",
-            url: `/inventory/checkout/${product_id}/${condition}`,
+            url: `/api/inventory/checkout/${product_id}/${condition}`,
             contentType: "application/json",
             data: JSON.stringify(data),
         })
@@ -240,7 +240,7 @@ $(function () {
 
         let ajax = $.ajax({
             type: "PUT",
-            url: `/inventory/reorder/${product_id}/${condition}`,
+            url: `/api/inventory/reorder/${product_id}/${condition}`,
             contentType: "application/json",
             data: JSON.stringify(data),
         })
@@ -320,7 +320,7 @@ $(function () {
 
         let ajax = $.ajax({
             type: "GET",
-            url: `/inventory?${queryString}`,
+            url: `/api/inventory?${queryString}`,
             contentType: "application/json",
             data: ''
         })
