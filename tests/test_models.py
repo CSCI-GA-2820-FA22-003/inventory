@@ -14,6 +14,7 @@ DATABASE_URI = os.getenv(
     "DATABASE_URI", "postgresql://postgres:postgres@localhost:5432/testdb"
 )
 
+
 ######################################################################
 #  Inventory   M O D E L   T E S T   C A S E S
 ######################################################################
@@ -52,10 +53,10 @@ class TestInventory(unittest.TestCase):
         self.assertEqual(inventory_records, [])
 
         record = Inventory(product_id=1, name="monitor", condition=Inventory.Condition.NEW,
-                            quantity=10, reorder_quantity=20, restock_level=2)
+                           quantity=10, reorder_quantity=20, restock_level=2)
         self.assertTrue(record is not None)
-        self.assertEqual(str(record), "<Inventory %r product_id=[%d] condition=[%s]>" % 
-                                    ("monitor", 1, Inventory.Condition.NEW.name))
+        self.assertEqual(str(record), "<Inventory %r product_id=[%d] condition=[%s]>" %
+                         ("monitor", 1, Inventory.Condition.NEW.name))
         self.assertEqual(record.product_id, 1)
         self.assertEqual(record.name, "monitor")
         self.assertEqual(record.condition, Inventory.Condition.NEW)
@@ -65,7 +66,7 @@ class TestInventory(unittest.TestCase):
 
     def test_inventory_serialize(self):
         record = Inventory(product_id=1, name="monitor", condition=Inventory.Condition.NEW,
-                            quantity=10, reorder_quantity=20, restock_level=2, active = True)
+                           quantity=10, reorder_quantity=20, restock_level=2, active=True)
         actual_output = record.serialize()
         expected_output = {
             "product_id": 1,
@@ -98,6 +99,7 @@ class TestInventory(unittest.TestCase):
         self.assertEqual(record.restock_level, 2)
 
     def test_inventory_deserialize_partial_fields(self):
+        """Test Inventory deserializer for partially available fields"""
         data = {
             "product_id": 1,
             "condition": Inventory.Condition.RETURN.value
@@ -111,20 +113,17 @@ class TestInventory(unittest.TestCase):
         self.assertEqual(record.reorder_quantity, None)
         self.assertEqual(record.restock_level, None)
 
-
     def test_deserialize_missing_data(self):
         """It should not deserialize inventory with missing data"""
         data = {}
         record = Inventory()
         self.assertRaises(DataValidationError, record.deserialize, data)
 
-
     def test_deserialize_type_bad_data(self):
         """It should not deserialize inventory with bad data"""
         data = "this is not a dictionary"
         record = Inventory()
         self.assertRaises(DataValidationError, record.deserialize, data)
-
 
     def test_deserialize_bad_type_fields(self):
         record = InventoryFactory()
@@ -135,7 +134,6 @@ class TestInventory(unittest.TestCase):
             self.assertRaises(DataValidationError, record.deserialize, request)
             request[field] = temp
 
-
     def test_deserialize_out_of_range_values(self):
         record = InventoryFactory()
         request = record.serialize()
@@ -145,7 +143,6 @@ class TestInventory(unittest.TestCase):
             self.assertRaises(OutOfRangeError, record.deserialize, request)
             request[field] = temp
 
-
     def test_read_a_record(self):
         """It should Read a Record"""
         record = InventoryFactory()
@@ -153,10 +150,9 @@ class TestInventory(unittest.TestCase):
         record.create()
         self.assertIsNotNone(record.product_id)
         # Fetch it back
-        found_record = record.find((record.product_id,record.condition))
+        found_record = record.find((record.product_id, record.condition))
         self.assertEqual(found_record.product_id, record.product_id)
         self.assertEqual(found_record.condition, record.condition)
-
 
     def test_delete_a_record(self):
         """Test to check if record is deleted"""
@@ -166,7 +162,6 @@ class TestInventory(unittest.TestCase):
         # delete the inventory_record and make sure it isn't in the database
         inventory_record.delete()
         self.assertEqual(len(Inventory.all()), 0)
-
 
     def test_update_a_record(self):
         """It should Update a Record"""
@@ -183,7 +178,7 @@ class TestInventory(unittest.TestCase):
         record.update(new_data)
 
         self.assertEqual(record.serialize(), request_body)
-    
+
     def test_checkout_success(self):
         """Test for checkout success"""
         record = InventoryFactory()
@@ -206,7 +201,7 @@ class TestInventory(unittest.TestCase):
         data = {}
         data["ordered_quantity"] = 1
         self.assertRaises(InactiveRecordError, record.checkout, data)
-    
+
     def test_checkout_quantity_type_exception(self):
         """Test for checkout at wrong quantity type"""
         record = InventoryFactory()
@@ -217,7 +212,7 @@ class TestInventory(unittest.TestCase):
         data = {}
         data["ordered_quantity"] = "1"
         self.assertRaises(DataValidationError, record.checkout, data)
-    
+
     def test_checkout_exceed_exeception(self):
         """Test for checkout exceed exception"""
         record = InventoryFactory()
@@ -229,7 +224,6 @@ class TestInventory(unittest.TestCase):
         data = {}
         data["ordered_quantity"] = original_quantity + 1
         self.assertRaises(OutOfRangeError, record.checkout, data)
-
 
     def test_reorder(self):
         """Test for reorder success"""

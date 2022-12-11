@@ -217,13 +217,10 @@ class Inventory(db.Model):
         pid_check = True if data.get("product_id") is not None else False
         cond_check = True if data.get("condition") is not None else False
         if pid_check and cond_check:
-            if isinstance(data.get("product_id"), int):
-                if isinstance(data.get("condition"), str):
-                    self.product_id = data.get("product_id")
-                    self.condition = self.Condition(data.get("condition"))
-                    return True
-                else:
-                    return False
+            if isinstance(data.get("product_id"), int) and isinstance(data.get("condition"), str):
+                self.product_id = data.get("product_id")
+                self.condition = self.Condition(data.get("condition"))
+                return True
             else:
                 return False
         else:
