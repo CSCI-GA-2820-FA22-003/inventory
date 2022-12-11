@@ -52,9 +52,13 @@ run: ## Run the service
 .PHONY: deploy
 deploy: ## Deploy the service on local Kubernetes
 	$(info Deploying service locally...)
+	kubectl apply -f deploy/postgresql.yaml --namespace=prod
+	kubectl apply -f deploy/postgresql.yaml --namespace=dev
 	kubectl apply -f deploy/deployment.yaml --namespace=dev
+	kubectl apply -f deploy/deployment.yaml --namespace=prod
 	kubectl apply -f deploy/service-dev.yaml --namespace=dev
 	kubectl apply -f deploy/service-prod.yaml --namespace=prod
+	
 
 
 .PHONY: login
