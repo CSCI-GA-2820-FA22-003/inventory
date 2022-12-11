@@ -6,12 +6,27 @@ and SQL database
 """
 import sys
 from flask import Flask
+from flask_restx import Api
 from service import config
 from .common import log_handlers
 
 # Create Flask application
 app = Flask(__name__)
 app.config.from_object(config)
+
+######################################################################
+# Configure Swagger before initializing it
+######################################################################
+api = Api(
+    app,
+    version='1.0.0',
+    title='Inventory REST API Service',
+    description='This is an Inventory server.',
+    default='inventory',
+    default_label='Inventory operations',
+    doc='/apidocs',
+    prefix='/api'
+)
 
 # Dependencies require we import the routes AFTER the Flask app is created
 # pylint: disable=wrong-import-position, wrong-import-order
