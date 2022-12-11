@@ -180,7 +180,6 @@ class TestInventory(TestCase):
         response = self.client.post(BASE_URL, data="1")
         self.assertEqual(response.status_code, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
 
-
     def test_delete_inventory_record_success(self):
         """Test to check if it deletes an inventory record"""
         test_record = self._create_inventory_records(1)[0]
@@ -225,7 +224,6 @@ class TestInventory(TestCase):
         # self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         # data = response.get_json()
         # self.assertEqual(data['active'], True)
-
 
     def test_update_non_existent_inventory_records(self):
         """Test to update non-existent inventory records"""
