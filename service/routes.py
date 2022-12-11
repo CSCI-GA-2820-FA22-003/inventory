@@ -3,8 +3,8 @@ Inventory
 """
 import logging
 
-from flask import jsonify, request, url_for, abort
-from flask_restx import Api, Resource, fields, reqparse, inputs
+from flask import jsonify, request, abort
+from flask_restx import Resource, fields, reqparse, inputs
 from service.models import Inventory
 from .common import status  # HTTP Status Codes
 
@@ -29,6 +29,7 @@ def index():
     """ Root URL response """
     app.logger.info("Request for Root URL")
     return app.send_static_file("index.html")
+
 
 # Define the model so that the docs reflect what can be sent
 create_model = api.model('Inventory', {
@@ -67,11 +68,13 @@ inventory_model = api.inherit(
     }
 )
 
+
 # query string arguments
 inventory_args = reqparse.RequestParser()
 inventory_args.add_argument(
     'status', type=inputs.boolean, required=False, help='List Inventory by status'
 )
+
 
 ######################################################################
 #  PATH: /inventory/{product_id}/{condition}
@@ -111,6 +114,7 @@ class InventoryResource(Resource):
     @api.expect(inventory_model)
     @api.marshal_with(inventory_model)
     def put(self, product_id, condition):
+        """Update the record of an existing product in the Inventory database"""
         app.logger.info("Update an inventory record inside InventoryResource")
         # Retrieve item from table
         new_record = Inventory()
@@ -130,9 +134,13 @@ class InventoryResource(Resource):
     @api.doc('delete_inventory')
     @api.response(204, 'Inventory deleted')
     def delete(self, product_id, condition):
-        app.logger.info(f"Request to delete inventory record with id: {product_id} with condition: {condition}")
+        """Delete a record on the basis of the specified
+        product_id and condition"""
+        app.logger.info("Request to delete inventory record with id: "
+                        f"{product_id} with condition: {condition}")
         inventory = Inventory.find((product_id, condition))
-        app.logger.info(f"For the provided id, Inventory Record returned is: {inventory}")
+        app.logger.info("For the provided id, Inventory Record returned is:"
+                        f'{inventory}')
         if not inventory:
             return "", status.HTTP_204_NO_CONTENT
         inventory.delete()
@@ -145,9 +153,9 @@ class InventoryResource(Resource):
 @api.route('/inventory')
 class InventoryCollection(Resource):
     """ Handles all interactions with collections of inventory """
-    #------------------------------------------------------------------
+    # ------------------------------------------------------------------
     # LIST ALL PRODUCTS IN INVENTORY
-    #------------------------------------------------------------------
+    # ------------------------------------------------------------------
     @api.doc('list_inventory')
     @api.expect(inventory_args, validate=True)
     @api.marshal_list_with(inventory_model)
@@ -197,9 +205,9 @@ class InventoryCollection(Resource):
         app.logger.info("Returning %d inventory records", len(results))
         return results, status.HTTP_200_OK
 
-    #------------------------------------------------------------------
-    # ADD A NEW INVENTORY
-    #------------------------------------------------------------------
+    # ------------------------------------------------------------------
+    # ADD A NEW PRODUCT TO THE INVENTORY
+    # ------------------------------------------------------------------
     @api.doc('create_inventory')
     @api.response(400, 'The posted data was not valid')
     @api.expect(inventory_model)
@@ -213,8 +221,8 @@ class InventoryCollection(Resource):
         check_content_type("application/json")
         inventory = Inventory()
         data = request.get_json()
-        if not inventory.check_primary_key_valid(data):
-            abort(status.HTTP_409_CONFLICT, "Primary key missing/invalid")
+        # if not inventory.check_primary_key_valid(data):
+        #     abort(status.HTTP_409_CONFLICT, "Primary key missing/invalid")
         inventory.deserialize(data)
 
         existing_inventory = Inventory.find((inventory.product_id, inventory.condition))
@@ -235,10 +243,52 @@ class InventoryCollection(Resource):
         # return jsonify(inventory.serialize()), status.HTTP_201_CREATED, {"Location": location_url}
 
 
+@api.route('/inventory/checkout/<product_id>/<condition>')
+class InventoryCheckout(Resource):
+    # ------------------------------------------------------------------
+    # CHECKOUT A FIXED QUANTITY OF A PRODUCT IN THE INVENTORY DB
+    # ------------------------------------------------------------------
+    @api.doc('checkout_inventory')
+    @api.response(400, 'The posted Inventory data was not valid')
+    @api.response(404, 'Inventory not found')
+    @api.expect(inventory_model)
+    @api.marshal_with(inventory_model)
+    def put(self, product_id, condition):
+        """Reduces quantity from inventory of a particular item based on the amount specified by user"""
+        data = request.get_json()
+        existing_record = Inventory.find((product_id, condition))
+        if not existing_record:
+            abort(status.HTTP_404_NOT_FOUND, f"Product with id '{product_id}' was not found.")
+        existing_record.checkout(data)
+        return existing_record.serialize(), status.HTTP_200_OK
+
+
+@api.route('/inventory/reorder/<product_id>/<condition>')
+class InventoryReorder(Resource):
+    # ------------------------------------------------------------------
+    # REORDER FIXED QUANTITY OF A PRODUCT IN THE INVENTORY DB
+    # ------------------------------------------------------------------
+    @api.doc('reorder_inventory')
+    @api.response(400, 'The posted Inventory data was not valid')
+    @api.response(404, 'Inventory not found')
+    @api.expect(inventory_model)
+    @api.marshal_with(inventory_model)
+    def put(self, product_id, condition):
+        """Increases quantity from inventory of a particular item
+        based on the amount specified by user"""
+        app.logger.info(f"Reorder called for product id: {product_id}, condition: {condition}")
+
+        data = request.get_json()
+        existing_record = Inventory.find((product_id, condition))
+        if not existing_record:
+            abort(status.HTTP_404_NOT_FOUND, f"Product with id '{product_id}' was not found.")
+        existing_record.reorder(data)
+        return existing_record.serialize(), status.HTTP_200_OK
 
 ######################################################################
 #  U T I L I T Y   F U N C T I O N S
 ######################################################################
+
 
 @app.before_first_request
 def init_db():
@@ -246,28 +296,28 @@ def init_db():
     Inventory.init_db(app)
 
 
-@app.route("/inventory/checkout/<int:product_id>/<string:condition>", methods=["PUT"])
-def checkout_quantity(product_id, condition):
-    """Reduces quantity from inventory of a particular item based on the amount specified by user"""
-    data = request.get_json()
-    existing_record = Inventory.find((product_id, condition))
-    if not existing_record:
-        abort(status.HTTP_404_NOT_FOUND, f"Product with id '{product_id}' was not found.")
-    existing_record.checkout(data)
-    return jsonify(existing_record.serialize()), status.HTTP_200_OK
+# @app.route("/inventory/checkout/<int:product_id>/<string:condition>", methods=["PUT"])
+# def checkout_quantity(product_id, condition):
+#     """Reduces quantity from inventory of a particular item based on the amount specified by user"""
+#     data = request.get_json()
+#     existing_record = Inventory.find((product_id, condition))
+#     if not existing_record:
+#         abort(status.HTTP_404_NOT_FOUND, f"Product with id '{product_id}' was not found.")
+#     existing_record.checkout(data)
+#     return jsonify(existing_record.serialize()), status.HTTP_200_OK
 
 
-@app.route("/inventory/reorder/<int:product_id>/<string:condition>", methods=["PUT"])
-def reorder_quantity(product_id, condition):
-    """Increases quantity from inventory of a particular item based on the amount specified by user"""
-    app.logger.info(f"Reorder called for product id: {product_id}, condition: {condition}")
+# @app.route("/inventory/reorder/<int:product_id>/<string:condition>", methods=["PUT"])
+# def reorder_quantity(product_id, condition):
+#     """Increases quantity from inventory of a particular item based on the amount specified by user"""
+#     app.logger.info(f"Reorder called for product id: {product_id}, condition: {condition}")
 
-    data = request.get_json()
-    existing_record = Inventory.find((product_id, condition))
-    if not existing_record:
-        abort(status.HTTP_404_NOT_FOUND, f"Product with id '{product_id}' was not found.")
-    existing_record.reorder(data)
-    return jsonify(existing_record.serialize()), status.HTTP_200_OK
+#     data = request.get_json()
+#     existing_record = Inventory.find((product_id, condition))
+#     if not existing_record:
+#         abort(status.HTTP_404_NOT_FOUND, f"Product with id '{product_id}' was not found.")
+#     existing_record.reorder(data)
+#     return jsonify(existing_record.serialize()), status.HTTP_200_OK
 
 
 ######################################################################

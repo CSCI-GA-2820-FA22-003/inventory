@@ -7,7 +7,6 @@ Test cases can be run with the following:
 """
 import logging
 import os
-import random
 from urllib.parse import quote_plus
 from unittest import TestCase
 
@@ -20,6 +19,8 @@ DATABASE_URI = os.getenv(
     "DATABASE_URI", "postgresql://postgres:postgres@localhost:5432/testdb"
 )
 BASE_URL = "/api/inventory"
+
+
 ######################################################################
 #  T E S T   C A S E S
 ######################################################################
@@ -36,13 +37,11 @@ class TestInventory(TestCase):
         app.logger.setLevel(logging.CRITICAL)
         # set up the connection with the database
         init_db(app)
-        
 
     @classmethod
     def tearDownClass(cls):
         """ This runs once after the entire test suite """
         db.session.close()
-
 
     def setUp(self):
         """ This runs before each test """
@@ -50,11 +49,9 @@ class TestInventory(TestCase):
         db.session.query(Inventory).delete()  # clean up the last tests
         db.session.commit()
 
-
     def tearDown(self):
         """ This runs after each test """
         db.session.remove()
-
 
     def _create_inventory_records(self, count):
         """Factory method to create inventory records in bulk"""
@@ -134,13 +131,11 @@ class TestInventory(TestCase):
         # self.assertEqual(new_record["reorder_quantity"], test_record.reorder_quantity)
         # self.assertEqual(new_record["restock_level"], test_record.restock_level)
 
-
     def test_create_alreadyexists_record(self):
         """Test if a record already exists"""
-        
         test_record = InventoryFactory()
         logging.debug("New Inventory Record: %s", test_record.serialize())
-        
+
         response = self.client.post(BASE_URL, json=test_record.serialize())
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
@@ -158,14 +153,14 @@ class TestInventory(TestCase):
         self.assertEqual(new_record["restock_level"], test_record.restock_level)
         self.assertEqual(new_record["active"], test_record.active)
 
-        # Create a new record with the same data values as just inserted into the database, this should return a 409 conflict
+        # Create a new record with the same data values as just inserted into the database,
+        # this should return a 409 conflict
         response = self.client.post(BASE_URL, json=test_record.serialize())
         self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
 
-
     def test_create_record_invalid_content_type(self):
         """Test if the user input is of invalid content type"""
-        
+
         input_data = {
             "id": 1,
             "name": "monitor",
@@ -174,9 +169,9 @@ class TestInventory(TestCase):
             "reorder_quantity": 20,
             "restock_level": 2
             }
-        
+
         logging.debug("New Inventory Record: %s", input_data)
-        
+
         # this will test when a json is passed by cannot be parsed
         response = self.client.post(BASE_URL, data=input_data)
         self.assertEqual(response.status_code, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
@@ -189,13 +184,14 @@ class TestInventory(TestCase):
     def test_delete_inventory_record_success(self):
         """Test to check if it deletes an inventory record"""
         test_record = self._create_inventory_records(1)[0]
-        response = self.client.delete(f"{BASE_URL}/{test_record.product_id}/{test_record.condition.name}")
+        url = f"{BASE_URL}/{test_record.product_id}/{test_record.condition.name}"
+        response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(len(response.data), 0)
         # make sure they are deleted
-        response = self.client.get(f"{BASE_URL}/{test_record.product_id}/{test_record.condition.name}")
+        url2 = f"{BASE_URL}/{test_record.product_id}/{test_record.condition.name}"
+        response = self.client.get(url2)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-
 
     def test_delete_inventory_record_exception(self):
         """Test to check if code deletes non-existent record"""
@@ -203,7 +199,6 @@ class TestInventory(TestCase):
         SAMPLE_CONDITION = 'NEW'
         response = self.client.delete(f"{BASE_URL}/{SAMPLE_PRODUCT_ID}/{SAMPLE_CONDITION}")
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-
 
     def test_list_inventory_records(self):
         """Test to successfully list all inventory records"""
@@ -215,6 +210,21 @@ class TestInventory(TestCase):
         data = response.get_json()
         self.assertEqual(len(data), 2)
         self.assertCountEqual(expected_response, data)
+        expected_records = self._create_inventory_records(2)
+
+        test_record = InventoryFactory()
+        test_record.active = False
+        response = self.client.post(BASE_URL, json=test_record.serialize())
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        data = response.get_json()
+        self.assertEqual(data['active'], False)
+
+        # test_record = InventoryFactory()
+        # test_record.active = True
+        # response = self.client.post(BASE_URL, json=test_record.serialize())
+        # self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        # data = response.get_json()
+        # self.assertEqual(data['active'], True)
 
 
     def test_update_non_existent_inventory_records(self):
@@ -226,11 +236,10 @@ class TestInventory(TestCase):
         data = response.get_json()
         # increment product_id so that query searches for a different product_id
         data['product_id'] += 1
-        response = self.client.put(f"{BASE_URL}/{data['product_id']}/{test_record.condition.name}"
-                                   , json=data)
+        response = self.client.put(f"{BASE_URL}/{data['product_id']}/{test_record.condition.name}",
+                                   json=data)
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-
 
     def test_update_inventory_records(self):
         """Test for successful update of an inventory record with valid values"""
@@ -246,7 +255,6 @@ class TestInventory(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         updated_record = response.get_json()
         self.assertEqual(data, updated_record)
-
 
     def test_attempt_incorrect_value_update(self):
         """Test to check if a record gets updated with an invalid value for a particular field"""
@@ -269,7 +277,6 @@ class TestInventory(TestCase):
             self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
             data[field] = temp
 
-
     def update_non_existent_record(self):
         """Update a record that does not exist in the database"""
         test_record = InventoryFactory()
@@ -284,12 +291,11 @@ class TestInventory(TestCase):
                                    json=data)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-
     def test_read_records(self):
         """Test to read a record successfully existing from within database"""
         record = self._create_inventory_records(1)[0]
         record.name = None
-        record.quantity  = None
+        record.quantity = None
         record.reorder_quantity = None
         record.restock_level = None
         logging.debug("Test Read Records: %s", record.serialize())
@@ -299,31 +305,31 @@ class TestInventory(TestCase):
         self.assertEqual(data["product_id"], record.product_id)
         self.assertEqual(data["condition"], record.condition.value)
 
-
     def test_read_non_existent_records(self):
         """Test to attempt reading records that do not exist in the database"""
         record = self._create_inventory_records(1)[0]
         record.product_id = record.product_id + 1
         record.name = None
-        record.quantity  = None
+        record.quantity = None
         record.reorder_quantity = None
         record.restock_level = None
         logging.debug("Test Read Records: %s", record.serialize())
-        response = self.client.get(f"{BASE_URL}/{record.product_id}", json= record.serialize())
+        response = self.client.get(f"{BASE_URL}/{record.product_id}", json=record.serialize())
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-
 
     def test_method_not_allowed(self):
         """Test if API is called with the wrong method type"""
         test_record = InventoryFactory()
-         
+
         # calling a delete method without product id
-        logging.debug("Test Inventory Records with method not allowed delete request: %s", test_record.serialize())
+        logging.debug("Test Inventory Records with method not allowed delete request: %s",
+                      test_record.serialize())
         response = self.client.delete(f"{BASE_URL}", json=test_record.serialize())
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
         # calling an update method without product id
-        logging.debug("Test Inventory Records with method not allowed update request: %s", test_record.serialize())
+        logging.debug("Test Inventory Records with method not allowed update request: %s",
+                      test_record.serialize())
         response = self.client.put(f"{BASE_URL}", json=test_record.serialize())
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
@@ -384,7 +390,7 @@ class TestInventory(TestCase):
         records = self._create_inventory_records(10)
         test_quantity = records[0].quantity
         quantity_list = [record for record in records if record.quantity == test_quantity]
-        test_operator="="
+        test_operator = "="
         logging.info(
             "Quantity=%s: %d = %s", test_quantity, len(quantity_list), quantity_list
         )
@@ -401,11 +407,12 @@ class TestInventory(TestCase):
         records = self._create_inventory_records(10)
         test_quantity = records[0].quantity
         quantity_list = [record for record in records if record.quantity == test_quantity]
-        test_operator="=="
+        test_operator = "=="
         logging.info(
             "Quantity=%s: %d = %s", test_quantity, len(quantity_list), quantity_list
         )
-        resp = self.client.get(BASE_URL, query_string=f"quantity={str(test_quantity)}&operator={test_operator}")
+        resp = self.client.get(BASE_URL, query_string=f"quantity={str(test_quantity)}"
+                               f"&operator={test_operator}")
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_query_inventories_by_less_than_quantity(self):
@@ -413,11 +420,12 @@ class TestInventory(TestCase):
         records = self._create_inventory_records(10)
         test_quantity = records[0].quantity
         quantity_list = [record for record in records if record.quantity < test_quantity]
-        test_operator="<"
+        test_operator = "<"
         logging.info(
             "Quantity=%s: %d = %s", test_quantity, len(quantity_list), quantity_list
         )
-        resp = self.client.get(BASE_URL, query_string=f"quantity={str(test_quantity)}&operator={test_operator}")
+        resp = self.client.get(BASE_URL, query_string=f"quantity={str(test_quantity)}"
+                               f"&operator={test_operator}")
         if len(quantity_list) > 0:
             self.assertEqual(resp.status_code, status.HTTP_200_OK)
             data = resp.get_json()
@@ -433,28 +441,30 @@ class TestInventory(TestCase):
         records = self._create_inventory_records(10)
         test_quantity = records[0].quantity
         quantity_list = [record for record in records if record.quantity <= test_quantity]
-        test_operator="<="
+        test_operator = "<="
         logging.info(
             "Quantity=%s: %d = %s", test_quantity, len(quantity_list), quantity_list
         )
-        resp = self.client.get(BASE_URL, query_string=f"quantity={str(test_quantity)}&operator={test_operator}")
+        resp = self.client.get(BASE_URL, query_string=f"quantity={str(test_quantity)}"
+                               f"&operator={test_operator}")
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         data = resp.get_json()
         self.assertEqual(len(data), len(quantity_list))
         # check the data just to be sure
         for record in data:
             self.assertLessEqual(record["quantity"], test_quantity)
-    
+
     def test_query_inventories_by_greater_than_equal_quantity(self):
         """It should Query Inventories by Greater Than Equal to Quantity Individually"""
         records = self._create_inventory_records(10)
         test_quantity = records[0].quantity
         quantity_list = [record for record in records if record.quantity >= test_quantity]
-        test_operator=">="
+        test_operator = ">="
         logging.info(
             "Quantity=%s: %d = %s", test_quantity, len(quantity_list), quantity_list
         )
-        resp = self.client.get(BASE_URL, query_string=f"quantity={str(test_quantity)}&operator={test_operator}")
+        resp = self.client.get(BASE_URL, query_string=f"quantity={str(test_quantity)}"
+                               f"&operator={test_operator}")
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         data = resp.get_json()
         self.assertEqual(len(data), len(quantity_list))
@@ -467,12 +477,13 @@ class TestInventory(TestCase):
         records = self._create_inventory_records(10)
         test_quantity = records[0].quantity
         quantity_list = [record for record in records if record.quantity > test_quantity]
-        test_operator=">"
+        test_operator = ">"
         logging.info(
             "Quantity=%s: %d = %s", test_quantity, len(quantity_list), quantity_list
         )
-        resp = self.client.get(BASE_URL, query_string=f"quantity={str(test_quantity)}&operator={test_operator}")
-        if(len(quantity_list)>0):
+        resp = self.client.get(BASE_URL, query_string=f"quantity={str(test_quantity)}"
+                               f"&operator={test_operator}")
+        if len(quantity_list) > 0:
             self.assertEqual(resp.status_code, status.HTTP_200_OK)
             data = resp.get_json()
             self.assertEqual(len(data), len(quantity_list))
@@ -485,12 +496,15 @@ class TestInventory(TestCase):
     def test_query_inventories_by_combinations(self):
         """It should Query Inventories by combined filters"""
         records = self._create_inventory_records(10)
-        ######## Filtering by name and conditions
+        # Filtering by name and conditions
         test_name = records[0].name
-        test_condition=records[0].condition
-        lists = [record for record in records if record.name == test_name and record.condition.name==test_condition.name]
-        logging.info("Name=%s and Condition=%s: %d = %s", test_name, test_condition,len(lists), lists)
-        resp = self.client.get(BASE_URL, query_string=f"name={quote_plus(test_name)}&condition={quote_plus(test_condition.value)}")
+        test_condition = records[0].condition
+        lists = [record for record in records if record.name == test_name and
+                 record.condition.name == test_condition.name]
+        logging.info("Name=%s and Condition=%s: %d = %s", test_name, test_condition, len(lists),
+                     lists)
+        resp = self.client.get(BASE_URL, query_string=f"name={quote_plus(test_name)}"
+                               f"&condition={quote_plus(test_condition.value)}")
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         data = resp.get_json()
         self.assertEqual(len(data), len(lists))
@@ -498,12 +512,16 @@ class TestInventory(TestCase):
         for record in data:
             self.assertEqual(record["name"], test_name)
             self.assertEqual(record["condition"], test_condition.value)
-        ######## Filtering by condition and available status
+        # Filtering by condition and available status
         test_condition = records[0].condition
-        test_active=records[0].active
-        lists = [record for record in records if record.condition.name == test_condition.name and record.active==test_active]
-        logging.info("Condition=%s and Active=%s: %d = %s", test_condition, test_active,len(lists), lists)
-        resp = self.client.get(BASE_URL, query_string=f"condition={quote_plus(test_condition.value)}&active={quote_plus(str(test_active))}")
+        test_active = records[0].active
+        lists = [record for record in records if record.condition.name == test_condition.name and
+                 record.active == test_active]
+        logging.info("Condition=%s and Active=%s: %d = %s", test_condition, test_active, len(lists),
+                     lists)
+        query_string = f"condition={quote_plus(test_condition.value)}"
+        query_string += f"&active={quote_plus(str(test_active))}"
+        resp = self.client.get(BASE_URL, query_string=query_string)
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         data = resp.get_json()
         self.assertEqual(len(data), len(lists))
@@ -513,8 +531,8 @@ class TestInventory(TestCase):
             self.assertEqual(record["active"], test_active)
 
 ######################################################################
-    # T E S T   H E A L T H 
-###################################################################### 
+    # T E S T   H E A L T H
+######################################################################
     def test_health(self):
         """ It should call the health endpoint """
         response = self.client.get("/health")
@@ -536,7 +554,6 @@ class TestInventory(TestCase):
                                    f"/{test_record.condition.name}",
                                    json=request_dict)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-    
 
     def test_reorder(self):
         """Test for cases when reorder endpoint is called"""
@@ -549,14 +566,18 @@ class TestInventory(TestCase):
         expected_data = record.serialize()
         expected_data["quantity"] += request_body["ordered_quantity"]
 
+        # logging.debug(f'Expected Data = {expected_data}')
+
         # success: 200
-        url = f"inventory/reorder/{record.product_id}/{record.condition.name}"
+        url = f"{BASE_URL}/reorder/{record.product_id}/{record.condition.name}"
         response = self.client.put(url, json=request_body)
         actual_data = response.get_json()
+
+        # logging.debug(f'Actual Data = {actual_data}')
         self.assertEqual(actual_data, expected_data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         # product not found: 404
-        url = f"inventory/reorder/{record.product_id+1}/{record.condition.name}"
+        url = f"{BASE_URL}/reorder/{record.product_id + 1}/{record.condition.name}"
         response = self.client.put(url, json=request_body)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
