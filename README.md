@@ -249,7 +249,8 @@ You should see all the records in the inventory in a tabular format at the botto
 4. Press the Clear button.
 5. Enter the product id and condition of the record you want to update. Set the values of the other fields you would like to update to.
 6. Press the Update button.
-7. Enter the product id and condition. Press the Read button to verify the values of the fields have been updated.
+7. Press the Clear button.
+8. Enter the product id and condition. Press the Read button to verify the values of the fields have been updated.
 
 #### `Checkout a record`
 1. Press the Clear button.
