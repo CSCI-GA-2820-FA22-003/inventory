@@ -264,8 +264,9 @@ class InventoryCheckout(Resource):
         existing_record = Inventory.find((product_id, condition))
         if not existing_record:
             abort(status.HTTP_404_NOT_FOUND, f"Product with id '{product_id}' was not found.")
-        existing_record.checkout(data)
-        return existing_record.serialize(), status.HTTP_200_OK
+        else:
+            existing_record.checkout(data)
+            return existing_record.serialize(), status.HTTP_200_OK
 
 
 @api.route('/inventory/reorder/<product_id>/<condition>')

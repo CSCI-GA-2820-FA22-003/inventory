@@ -114,10 +114,10 @@ class Inventory(db.Model):
             if not isinstance(data, dict) or data == {}:
                 raise TypeError
             self.deserialize_util(data)
-        except KeyError as error:
-            raise DataValidationError(
-                f'Invalid Inventory: missing {error.args[0]}'
-            ) from error
+        # except KeyError as error:
+        #     raise DataValidationError(
+        #         f'Invalid Inventory: missing {error.args[0]}'
+        #     ) from error
         except TypeError as error:
             raise DataValidationError(
                 'Invalid Inventory: body of request contained bad or no data\n'
