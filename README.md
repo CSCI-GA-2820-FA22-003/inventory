@@ -224,8 +224,8 @@ You should see the below API homepage open up.
 #### `Create an inventory Record`
 1. Set the product id, condition, name, quantity as these are compulsory fields that are required.
 2. Press on the Create button.
-3. You should see a message Success on top of the page if the record was created and stored in the database
-4. To verify the data has been entered in the inventory you can place the product id and condition values in their respective fields and press the Read button. You should see all the properties of the record in their respective fields.
+3. You should see a message Success on top of the page if the record was created and stored in the inventory.
+4. To verify the data has been stored in the inventory you can place the product id and condition values in their respective fields and press the Read button. You should see all the properties of the record in their respective fields.
 
 #### `List all records present in the inventory` 
 1. Press the Clear button.
