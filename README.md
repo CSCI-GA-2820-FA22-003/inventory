@@ -212,6 +212,13 @@ Our application is publicly available on http://159.122.186.89:31002.
 
 We continue developing our application the developing application can be viewed at http://159.122.186.89:31001.
 
+You should see the below API homepage open up.
+<h4 align="center">
+<p align=center>
+<img src="Images/Flask-API.png" alt="isolated" />
+</p>
+<h4 align="center">
+
 ### Instructions on using the functionalities of the application
 
 #### `Create an inventory Record`
