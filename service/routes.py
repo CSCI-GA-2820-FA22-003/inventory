@@ -165,7 +165,7 @@ class InventoryCollection(Resource):
         feature_flag = False
         req = {}
 
-        product_id=request.args.get("product_id")
+        product_id = request.args.get("product_id")
         name = request.args.get("name")
         condition = request.args.get("condition")
         quantity = request.args.get("quantity")
