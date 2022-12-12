@@ -178,6 +178,7 @@ class TestInventory(unittest.TestCase):
         self.assertRaises(DataValidationError, record.deserialize, data)
 
     def test_deserialize_bad_type_fields(self):
+        """Test to check deserialization of invalid values"""
         record = InventoryFactory()
         request = record.serialize()
         for field in ["quantity"]:
@@ -187,6 +188,7 @@ class TestInventory(unittest.TestCase):
             request[field] = temp
 
     def test_deserialize_out_of_range_values(self):
+        """Test to deserialize out of range values"""
         record = InventoryFactory()
         request = record.serialize()
         for field in ["quantity"]:
@@ -265,7 +267,7 @@ class TestInventory(unittest.TestCase):
         data["ordered_quantity"] = "1"
         self.assertRaises(DataValidationError, record.checkout, data)
 
-    def test_checkout_exceed_exeception(self):
+    def test_checkout_exceed_exception(self):
         """Test for checkout exceed exception"""
         record = InventoryFactory()
         record.create()

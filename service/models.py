@@ -150,7 +150,7 @@ class Inventory(db.Model):
             else:
                 raise TypeError
 
-        for field in ["quantity",]:
+        for field in ["quantity"]:
             if data.get(field):
                 if not isinstance(data.get(field), int):
                     raise TypeError
