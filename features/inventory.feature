@@ -10,6 +10,7 @@ Background:
         |          2  | chair    | refurbished  | 3        | True    | 
         |          1  | table    | refurbished  | 5        | True    | 
         |          3  | board    | new          | 2        | True    | 
+        |          4  | mobile   | return       |1         | False   |
 
 Scenario: The server is running
     When I visit the "Home Page"
@@ -41,54 +42,121 @@ Scenario: Create a Product
     And I should see "5" in the "quantity" field
     And I should see "True" in the "active" dropdown
 
-# Scenario: List all inventory records
-#     When I visit the "Home Page"
-#     And I press the "Search" button
-#     Then I should see the message "Success"
-#     And I should see "10" in the results
-#     And I should see "table" in the results
-#     And I should see "new" in the results
-#     And I should see "5" in the results
-#     And I should see "True" in the results
-#     And I should not see "bottle" in the results
+Scenario: List all inventory records
+    When I visit the "Home Page"
+    And I press the "clear" button
+    And I press the "search" button
+    Then I should see the message "Success"
+    And I should see "1" in the results
+    And I should see "chair" in the results
+    And I should see "refurbished" in the results
+    And I should see "10" in the results
+    And I should see "true" in the results
+    And I should not see "bottle" in the results
 
-# Scenario: Search for dogs
-#     When I visit the "Home Page"
-#     And I set the "Category" to "dog"
-#     And I press the "Search" button
-#     Then I should see the message "Success"
-#     And I should see "fido" in the results
-#     And I should not see "kitty" in the results
-#     And I should not see "leo" in the results
+Scenario: Search for record 
+    When I visit the "Home Page"
+    And I press the "clear" button
+    And I set the "product id" to "1"
+    And I select "new" in the "condition" dropdown
+    And I press the "search" button
+    Then I should see the message "Success"
+    And I should see "table" in the results
+    And I should see "10" in the results
+    And I should not see "chair" in the results
+    And I should not see "board" in the results
 
-# Scenario: Search for available
-#     When I visit the "Home Page"
-#     And I select "True" in the "Available" dropdown
-#     And I press the "Search" button
-#     Then I should see the message "Success"
-#     And I should see "fido" in the results
-#     And I should see "kitty" in the results
-#     And I should see "sammy" in the results
-#     And I should not see "leo" in the results
+Scenario: Search for record having quantity greater than 5
+    When I visit the "Home Page"
+    And I press the "clear" button
+    And I set the "quantity" to "3"
+    And I select ">=" in the "operator" dropdown
+    And I press the "search" button
+    Then I should see the message "Success"
+    And I should see "table" in the results
+    And I should see "chair" in the results
+    And I should not see "board" in the results
 
-# Scenario: Update a Pet
-#     When I visit the "Home Page"
-#     And I set the "Name" to "fido"
-#     And I press the "Search" button
-#     Then I should see the message "Success"
-#     And I should see "fido" in the "Name" field
-#     And I should see "dog" in the "Category" field
-#     When I change "Name" to "Boxer"
-#     And I press the "Update" button
-#     Then I should see the message "Success"
-#     When I copy the "Id" field
-#     And I press the "Clear" button
-#     And I paste the "Id" field
-#     And I press the "Retrieve" button
-#     Then I should see the message "Success"
-#     And I should see "Boxer" in the "Name" field
-#     When I press the "Clear" button
-#     And I press the "Search" button
-#     Then I should see the message "Success"
-#     And I should see "Boxer" in the results
-#     And I should not see "fido" in the results
+Scenario: Update a Record
+    When I visit the "Home Page"
+    And I press the "clear" button
+    And I set the "product id" to "1"
+    And I select "new" in the "condition" dropdown
+    And I press the "Search" button
+    Then I should see the message "Success"
+    And I should see "table" in the "name" field
+    And I should see "new" in the "condition" dropdown
+    And I should see "True" in the "active" dropdown
+    When I select "False" in the "active" dropdown
+    And I press the "Update" button
+    Then I should see the message "Success"
+    When I copy the "product id,condition" combined field
+    And I press the "Clear" button
+    And I paste the "product id,condition" combined field
+    And I press the "search" button
+    Then I should see the message "Success"
+    And I should see "1" in the results
+    And I should see "table" in the results
+    And I should see "new" in the results
+    And I should see "false" in the results
+    And I should not see "board" in the results
+
+ Scenario: Delete a Record
+    When I visit the "Home Page"
+    And I press the "clear" button
+    And I select "False" in the "active" dropdown
+    And I press the "Search" button
+    Then I should see the message "Success"
+    And I should see "mobile" in the "name" field
+    And I should see "return" in the "condition" field
+    When I copy the "product id,condition" combined field
+    And I press the "clear" button
+    And I paste the "product id,condition" combined field
+    And I press the "delete" button
+    Then I should see the message "Product has been Deleted!"
+    When I press the "clear" button
+    And I press the "search" button
+    Then I should see the message "Success"
+    And I should not see "mobile" in the results
+
+Scenario: Checkout a Record
+    When I visit the "Home Page"
+    And I press the "clear" button
+    And I set the "product id" to "2"
+    And I select "refurbished" in the "condition" dropdown
+    And I press the "read" button
+    Then I should see the message "Success"
+    And I should see "chair" in the "name" field
+    And I should see "3" in the "quantity" field
+    When I copy the "product id,condition" combined field
+    And I press the "clear" button
+    And I paste the "product id,condition" combined field
+    And I set the "ordered quantity" to "2"
+    And I press the "checkout" button
+    Then I should see the message "Product has been checked out from Inventory!"
+    When I set the "product id" to "2"
+    And I select "refurbished" in the "condition" dropdown
+    And I press the "read" button
+    Then I should see the message "Success"
+    And I should see "1" in the "quantity" field
+
+Scenario: Reorder a Record
+    When I visit the "Home Page"
+    And I press the "clear" button
+    And I set the "product id" to "1"
+    And I select "new" in the "condition" dropdown
+    And I press the "read" button
+    Then I should see the message "Success"
+    And I should see "table" in the "name" field
+    And I should see "10" in the "quantity" field
+    When I copy the "product id,condition" combined field
+    And I press the "clear" button
+    And I paste the "product id,condition" combined field
+    And I set the "ordered quantity" to "5"
+    And I press the "reorder" button
+    Then I should see the message "Product has been reordered!"
+    When I set the "product id" to "1"
+    And I select "new" in the "condition" dropdown
+    And I press the "read" button
+    Then I should see the message "Success"
+    And I should see "15" in the "quantity" field
