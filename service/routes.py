@@ -165,6 +165,7 @@ class InventoryCollection(Resource):
         feature_flag = False
         req = {}
 
+        product_id=request.args.get("product_id")
         name = request.args.get("name")
         condition = request.args.get("condition")
         quantity = request.args.get("quantity")
@@ -176,6 +177,10 @@ class InventoryCollection(Resource):
                 active = True
             else:
                 active = False
+        if product_id:
+            app.logger.info("Filtering by name: %s", name)
+            feature_flag = True
+            req["product_id"] = product_id
         if name:
             app.logger.info("Filtering by name: %s", name)
             feature_flag = True

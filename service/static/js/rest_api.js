@@ -14,9 +14,9 @@ $(function () {
         $("#restock_level").val(res.restock_level);
         
         if (res.active == true) {
-            $("#active").val("true");
+            $("#active").val("True");
         } else {
-            $("#active").val("false");
+            $("#active").val("False");
         }
     }
 
@@ -51,7 +51,7 @@ $(function () {
         let quantity = parseInt($("#quantity").val());
         let reorder_quantity = parseInt($("#reorder_quantity").val());
         let restock_level = parseInt($("#restock_level").val());
-        let active = $("#active").val() == "true";
+        let active = $("#active").val() == "True";
 
         let data = {
             "product_id": product_id,
@@ -97,7 +97,7 @@ $(function () {
         let quantity = parseInt($("#quantity").val());
         let reorder_quantity = parseInt($("#reorder_quantity").val());
         let restock_level = parseInt($("#restock_level").val());
-        let active = $("#active").val() == "true";
+        let active = $("#active").val() == "True";
 
         let data = {
             "product_id": product_id,
@@ -271,18 +271,25 @@ $(function () {
 
     $("#search-btn").click(function () {
 
-        
+        let product_id = parseInt($("#product_id").val());
         let condition = $("#condition").val();
         let name = $("#name").val();
         let quantity = parseInt($("#quantity").val());
         let operator = $("#operator").val();
-        let active = $("#active").val() == "true";
+        let active = $("#active").val();
 
 
         let queryString = ""
-
+        
         if (name) {
             queryString += 'name=' + name
+        }
+        if (product_id) {
+            if (queryString.length > 0) {
+                queryString += '&product_id=' + product_id
+            } else {
+                queryString += 'product_id=' + product_id
+            }
         }
         if (condition) {
             if (queryString.length > 0) {
@@ -308,7 +315,7 @@ $(function () {
 
         }
         
-        if (active) {
+        if (active)  {
             if (queryString.length > 0) {
                 queryString += '&active=' + active
             } else {
@@ -351,7 +358,7 @@ $(function () {
 
             // copy the first result to the form
             if (firstRecord != "") {
-                update_form_data(firstPet)
+                update_form_data(firstRecord)
             }
 
             flash_message("Success")
