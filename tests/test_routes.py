@@ -88,8 +88,8 @@ class TestInventory(TestCase):
         self.assertEqual(new_record["name"], test_record.name)
         self.assertEqual(new_record["condition"], test_record.condition.value)
         self.assertEqual(new_record["quantity"], test_record.quantity)
-        self.assertEqual(new_record["reorder_quantity"], test_record.reorder_quantity)
-        self.assertEqual(new_record["restock_level"], test_record.restock_level)
+        # self.assertEqual(new_record["reorder_quantity"], test_record.reorder_quantity)
+        # self.assertEqual(new_record["restock_level"], test_record.restock_level)
         self.assertEqual(new_record["active"], test_record.active)
 
     def test_create_inventory_records_with_defaults(self):
@@ -115,8 +115,8 @@ class TestInventory(TestCase):
         self.assertEqual(new_record["name"], test_record.name)
         self.assertEqual(new_record["condition"], test_record.condition.value)
         self.assertEqual(new_record["quantity"], 0)
-        self.assertEqual(new_record["reorder_quantity"], 0)
-        self.assertEqual(new_record["restock_level"], 0)
+        # self.assertEqual(new_record["reorder_quantity"], 0)
+        # self.assertEqual(new_record["restock_level"], 0)
         self.assertEqual(new_record["active"], True)
 
         # uncomment this once list all products works
@@ -149,8 +149,8 @@ class TestInventory(TestCase):
         self.assertEqual(new_record["name"], test_record.name)
         self.assertEqual(new_record["condition"], test_record.condition.value)
         self.assertEqual(new_record["quantity"], test_record.quantity)
-        self.assertEqual(new_record["reorder_quantity"], test_record.reorder_quantity)
-        self.assertEqual(new_record["restock_level"], test_record.restock_level)
+        # self.assertEqual(new_record["reorder_quantity"], test_record.reorder_quantity)
+        # self.assertEqual(new_record["restock_level"], test_record.restock_level)
         self.assertEqual(new_record["active"], test_record.active)
 
         # Create a new record with the same data values as just inserted into the database,
@@ -166,8 +166,8 @@ class TestInventory(TestCase):
             "name": "monitor",
             "condition": Inventory.Condition.NEW.value,
             "quantity": 10,
-            "reorder_quantity": 20,
-            "restock_level": 2
+            # "reorder_quantity": 20,
+            # "restock_level": 2
             }
 
         logging.debug("New Inventory Record: %s", input_data)
@@ -238,8 +238,8 @@ class TestInventory(TestCase):
         test_record = self._create_inventory_records(1)[0]
         data = test_record.serialize()
         data["quantity"] += 1
-        data["reorder_quantity"] += 1
-        data["restock_level"] += 1
+        # data["reorder_quantity"] += 1
+        # data["restock_level"] += 1
         data["name"] = "some_name"
         # Make call to update record
         response = self.client.put(f"{BASE_URL}/{data['product_id']}/{test_record.condition.name}", json=data)
@@ -252,7 +252,7 @@ class TestInventory(TestCase):
         test_record = self._create_inventory_records(1)[0]
         data = test_record.serialize()
 
-        for field in ["quantity", "reorder_quantity", "restock_level"]:
+        for field in ["quantity"]:
             temp = data[field]
             data[field] = '100'
             response = self.client.put(f"{BASE_URL}/{data['product_id']}/{data['condition']}",
@@ -260,7 +260,7 @@ class TestInventory(TestCase):
             self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
             data[field] = temp
 
-        for field in ["quantity", "reorder_quantity", "restock_level"]:
+        for field in ["quantity"]:
             temp = data[field]
             data[field] = -20
             response = self.client.put(f"{BASE_URL}/{data['product_id']}/{data['condition']}",
@@ -287,8 +287,8 @@ class TestInventory(TestCase):
         record = self._create_inventory_records(1)[0]
         record.name = None
         record.quantity = None
-        record.reorder_quantity = None
-        record.restock_level = None
+        # record.reorder_quantity = None
+        # record.restock_level = None
         logging.debug("Test Read Records: %s", record.serialize())
         response = self.client.get(f"{BASE_URL}/{record.product_id}/{record.condition.name}")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -302,8 +302,8 @@ class TestInventory(TestCase):
         record.product_id = record.product_id + 1
         record.name = None
         record.quantity = None
-        record.reorder_quantity = None
-        record.restock_level = None
+        # recordreorder_quantity = None
+        # record.restock_level = None
         logging.debug("Test Read Records: %s", record.serialize())
         response = self.client.get(f"{BASE_URL}/{record.product_id}", json=record.serialize())
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)

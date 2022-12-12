@@ -46,12 +46,12 @@ create_model = api.model('Inventory', {
         required=True,
         description='Quantity of inventory type'
     ),
-    'reorder_quantity': fields.Integer(
-        description='The reorder quantity of the Inventory'
-    ),
-    'restock_level': fields.Integer(
-        description='The restock_level of the Inventory'
-    ),
+    # 'reorder_quantity': fields.Integer(
+    #     description='The reorder quantity of the Inventory'
+    # ),
+    # 'restock_level': fields.Integer(
+    #     description='The restock_level of the Inventory'
+    # ),
     'active': fields.Boolean(
         required=True,
         description='Active status inventory'
