@@ -206,6 +206,68 @@ Delete inventory record.
 #### Response
 
 The record that matches the keys `product_id` and `condition` returns `HTTP_204_NO_CONTENT`.
+## :computer: User Interface
+
+Our application is publicly available on http://159.122.186.89:31002.
+
+We continue developing our application the developing application can be viewed at http://159.122.186.89:31001.
+
+### Instructions on using the functionalities of the application
+
+#### `Create an inventory Record`
+1. Set the product id, condition, name, quantity as these are compulsory fields that are required.
+2. Press on the Create button.
+3. You should see a message Success on top of the page if the record was created and stored in the database
+4. To verify the data has been entered in the inventory you can place the product id and condition values in their respective fields and press the Read button. You should see all the properties of the record in their respective fields.
+
+#### `List all records present in the inventory` 
+1. Press the Clear button.
+2. Press the Search button.
+You should see all the records in the inventory in a tabular format at the bottom of the page.
+
+#### `Search for a specific record whose product id and condition are known` 
+1. Press the Clear button.
+2. Set the product id and condition for the given record in their respective fields.
+3. Press the Read button. You should see all the properties of the record in their respective fields.
+
+#### `Search for records satisfying given properties`
+1. Press the Clear button.
+2. Set the values of fields on which you want to search for in the inventory.
+3. Press the Search button. You should see all the records matching your search requirement in the bottom of the page.
+
+#### `Updating a record`
+1. Press the Clear button.
+2. Set the value of product id and condition of the record you want to update.
+3. Press the Read button to verify the properties of the record.
+4. Press the Clear button.
+5. Enter the product id and condition of the record you want to update. Set the values of the other fields you would like to update to.
+6. Press the Update button.
+7. Enter the product id and condition. Press the Read button to verify the values of the fields have been updated.
+
+#### `Checkout a record`
+1. Press the Clear button.
+2. Set the value of the product id and condition in their respective fields. 
+3. Press the Read button.
+4. Enter the quantity of the item that you would want to checkout and enter it in the Ordered Quantity field. 
+5. Press the Checkout button.
+6. Then you should see a message "Product has been checked out from the Inventory!" on the top of the page if the checkout was successful.
+7. Press the Clear button.
+8. Set the product id and condition in their respective fields.
+9. Press the Read/Search button.
+10. You should see the quantity field of the record updated. The quantity would be the remaining quantity of the record left in the inventory.
+
+#### `Reorder a record`
+1. Press the Clear button.
+2. Set the value of the product id and condition in their respective fields. 
+3. Press the Read button.
+4. Enter the quantity of the item that you would want to checkout and enter it in the Ordered Quantity field. 
+5. Press the Reorder button.
+6. Then you should see a message "Product has been checked out from the Inventory!" on the top of the page if the checkout was successful.
+7. Press the Clear button.
+8. Set the product id and condition in their respective fields.
+9. Press the Read/Search button.
+10. You should see the quantity field of the record updated. The quantity would be the new quantity of the record present in the inventory.
+
 
 ## :wrench: Running Tests
 
