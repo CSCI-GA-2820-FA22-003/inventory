@@ -90,13 +90,51 @@ class TestInventory(unittest.TestCase):
         }
         record = Inventory()
         record.deserialize(data)
-        logging.debug(record)
         self.assertEqual(record.product_id, 1)
         self.assertEqual(record.name, "monitor")
         self.assertEqual(record.condition, Inventory.Condition.NEW)
         self.assertEqual(record.quantity, 10)
         self.assertEqual(record.reorder_quantity, 20)
         self.assertEqual(record.restock_level, 2)
+
+    def test_inventory_deserialize_missing_keys(self):
+        """Test check_primary_key_valid false"""
+        data = {
+            "name": "monitor",
+            "wrong_quantity": 10,
+            "reorder_quantity": 20,
+            "restock_level": 2
+        }
+        record = Inventory()
+        record.deserialize(data)
+        self.assertEqual(record.product_id, None)
+
+    def test_inventory_deserialize_wrong_value_types(self):
+        """Test check_primary_key_valid false"""
+        data = {
+            "product_id": "WRONG_TYPE",
+            "name": "monitor",
+            "condition": 1,
+            "wrong_quantity": 10,
+            "reorder_quantity": 20,
+            "restock_level": 2
+        }
+        record = Inventory()
+        record.deserialize(data)
+        self.assertEqual(record.product_id, None)
+
+    def test_deserialize_wrong_type_name(self):
+        """It should not deserialize inventory with wrong type of name"""
+        data = {
+            "product_id": 1,
+            "name": 2,
+            "condition": Inventory.Condition.NEW.value,
+            "quantity": 10,
+            "reorder_quantity": 20,
+            "restock_level": 2
+        }
+        record = Inventory()
+        self.assertRaises(DataValidationError, record.deserialize, data)
 
     def test_inventory_deserialize_partial_fields(self):
         """Test Inventory deserializer for partially available fields"""

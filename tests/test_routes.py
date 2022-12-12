@@ -218,13 +218,6 @@ class TestInventory(TestCase):
         data = response.get_json()
         self.assertEqual(data['active'], False)
 
-        # test_record = InventoryFactory()
-        # test_record.active = True
-        # response = self.client.post(BASE_URL, json=test_record.serialize())
-        # self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        # data = response.get_json()
-        # self.assertEqual(data['active'], True)
-
     def test_update_non_existent_inventory_records(self):
         """Test to update non-existent inventory records"""
         test_record = InventoryFactory()
@@ -375,6 +368,24 @@ class TestInventory(TestCase):
         logging.info(
             "Active=%s: %d = %s", test_active, len(active_list), active_list
         )
+        resp = self.client.get(BASE_URL, query_string=f"active={test_active}")
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        data = resp.get_json()
+        self.assertEqual(len(data), len(active_list))
+        # check the data just to be sure
+        for record in data:
+            self.assertEqual(record["active"], test_active)
+
+    def test_query_inventories_by_active_string(self):
+        """It should Query Inventories by Availability Individually with string active status"""
+        records = self._create_inventory_records(10)
+        test_active = records[0].active
+        active_list = [record for record in records if record.active == test_active]
+        logging.info(
+            "Active=%s: %d = %s", test_active, len(active_list), active_list
+        )
+        records[1].active = 'False'
+        records[2].active = 'True'
         resp = self.client.get(BASE_URL, query_string=f"active={test_active}")
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         data = resp.get_json()
