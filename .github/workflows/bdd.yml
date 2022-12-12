@@ -14,8 +14,7 @@ on:
      - 'README.md'
      - '.vscode/**'
      - '**.md'
-
- jobs:
+jobs:
    build:
      runs-on: ubuntu-latest
      container: rofrano/pipeline-selenium:latest
