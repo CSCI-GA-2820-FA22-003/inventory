@@ -185,7 +185,7 @@ $(function () {
         });
 
         ajax.fail(function(res){
-            flash_message("Server error!")
+            flash_message("Product could not be Deleted!")
         });
     });
 
@@ -218,7 +218,7 @@ $(function () {
         });
 
         ajax.fail(function(res){
-            flash_message("Server error!")
+            flash_message("Product could not be checked out from Inventory!")
         });
     });
 
@@ -251,7 +251,7 @@ $(function () {
         });
 
         ajax.fail(function(res){
-            flash_message("Server error!")
+            flash_message("Product could not be reordered!")
         });
     });
 
