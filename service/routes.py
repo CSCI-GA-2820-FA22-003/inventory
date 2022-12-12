@@ -178,7 +178,7 @@ class InventoryCollection(Resource):
             else:
                 active = False
         if product_id:
-            app.logger.info("Filtering by name: %s", name)
+            app.logger.info("Filtering by product_id: %s", product_id)
             feature_flag = True
             req["product_id"] = product_id
         if name:

@@ -136,6 +136,20 @@ class TestInventory(unittest.TestCase):
         record = Inventory()
         self.assertRaises(DataValidationError, record.deserialize, data)
 
+    def test_deserialize_wrong_type_active(self):
+        """It should not deserialize inventory with wrong type of active"""
+        data = {
+            "active": "wrong_type",
+            "product_id": 1,
+            "name": "laptop",
+            "condition": Inventory.Condition.NEW.value,
+            "quantity": 10,
+            "reorder_quantity": 20,
+            "restock_level": 2
+        }
+        record = Inventory()
+        self.assertRaises(DataValidationError, record.deserialize, data)
+
     def test_inventory_deserialize_partial_fields(self):
         """Test Inventory deserializer for partially available fields"""
         data = {
