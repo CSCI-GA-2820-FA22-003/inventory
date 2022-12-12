@@ -7,6 +7,7 @@
 
 
 [![Build Status](https://github.com/CSCI-GA-2820-FA22-003/inventory/actions/workflows/tdd.yml/badge.svg)](https://github.com/CSCI-GA-2820-FA22-003/inventory/actions)
+[![Integration Status](https://github.com/CSCI-GA-2820-FA22-003/inventory/actions/workflows/bdd.yml/badge.svg)](https://github.com/CSCI-GA-2820-FA22-003/inventory/actions)
 [![codecov](https://codecov.io/github/CSCI-GA-2820-FA22-003/inventory/branch/master/graph/badge.svg?token=Z7XPQY3G6T)](https://codecov.io/github/CSCI-GA-2820-FA22-003/inventory)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Python](https://img.shields.io/badge/Language-Python-blue.svg)](https://python.org/)
