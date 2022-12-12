@@ -342,6 +342,20 @@ class TestInventory(TestCase):
         for record in data:
             self.assertEqual(record["name"], test_name)
 
+    def test_query_inventories_by_product_id(self):
+        """It should Query Inventories by Product ID Individually"""
+        records = self._create_inventory_records(10)
+        test_product_id = records[0].product_id
+        name_list = [record for record in records if record.product_id == test_product_id]
+        logging.info("Test_product_id=%s: %d = %s", test_product_id, len(name_list), name_list)
+        resp = self.client.get(BASE_URL, query_string=f"product_id={test_product_id}")
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        data = resp.get_json()
+        self.assertEqual(len(data), len(name_list))
+        # check the data just to be sure
+        for record in data:
+            self.assertEqual(record["product_id"], test_product_id)
+
     def test_query_inventories_by_condition(self):
         """It should Query Inventories by Condition Individually"""
         records = self._create_inventory_records(1)
@@ -548,6 +562,25 @@ class TestInventory(TestCase):
         self.assertEqual(response.get_json(), {"status": "OK"})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+    def test_checkout_features_success(self):
+        """Test for cases when the checkout feature fails if product is not in the database"""
+        test_record = InventoryFactory()
+        test_record.active = True
+        response = self.client.post(BASE_URL, json=test_record.serialize())
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        logging.debug('Created record, %s', Inventory().deserialize(response.get_json()))
+
+        # Get record as JSON
+        data = response.get_json()
+        request_dict = dict()
+        request_dict['product_id'] = data['product_id']
+        request_dict['condition'] = test_record.condition.name
+        request_dict['ordered_quantity'] = 1
+        response = self.client.put(f"{BASE_URL}/checkout/{data['product_id']}"
+                                   f"/{test_record.condition.name}",
+                                   json=request_dict)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
     def test_checkout_features_failure_invalid_product_id(self):
         """Test for cases when the checkout feature fails if product is not in the database"""
         test_record = InventoryFactory()
@@ -574,15 +607,10 @@ class TestInventory(TestCase):
         request_body = {"ordered_quantity": 1}
         expected_data = record.serialize()
         expected_data["quantity"] += request_body["ordered_quantity"]
-
-        # logging.debug(f'Expected Data = {expected_data}')
-
         # success: 200
         url = f"{BASE_URL}/reorder/{record.product_id}/{record.condition.name}"
         response = self.client.put(url, json=request_body)
         actual_data = response.get_json()
-
-        # logging.debug(f'Actual Data = {actual_data}')
         self.assertEqual(actual_data, expected_data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
