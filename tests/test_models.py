@@ -53,7 +53,7 @@ class TestInventory(unittest.TestCase):
         self.assertEqual(inventory_records, [])
 
         record = Inventory(product_id=1, name="monitor", condition=Inventory.Condition.NEW,
-                           quantity=10, reorder_quantity=20, restock_level=2)
+                           quantity=10,)
         self.assertTrue(record is not None)
         self.assertEqual(str(record), "<Inventory %r product_id=[%d] condition=[%s]>" %
                          ("monitor", 1, Inventory.Condition.NEW.name))
@@ -61,20 +61,20 @@ class TestInventory(unittest.TestCase):
         self.assertEqual(record.name, "monitor")
         self.assertEqual(record.condition, Inventory.Condition.NEW)
         self.assertEqual(record.quantity, 10)
-        self.assertEqual(record.reorder_quantity, 20)
-        self.assertEqual(record.restock_level, 2)
+        # self.assertEqual(record.reorder_quantity, 20)
+        # self.assertEqual(record.restock_level, 2)
 
     def test_inventory_serialize(self):
         record = Inventory(product_id=1, name="monitor", condition=Inventory.Condition.NEW,
-                           quantity=10, reorder_quantity=20, restock_level=2, active=True)
+                           quantity=10, active=True)
         actual_output = record.serialize()
         expected_output = {
             "product_id": 1,
             "name": "monitor",
             "condition": Inventory.Condition.NEW.value,
             "quantity": 10,
-            "reorder_quantity": 20,
-            "restock_level": 2,
+            # "reorder_quantity": 20,
+            # "restock_level": 2,
             "active": True
         }
         self.assertEqual(actual_output, expected_output)
@@ -85,8 +85,8 @@ class TestInventory(unittest.TestCase):
             "name": "monitor",
             "condition": Inventory.Condition.NEW.value,
             "quantity": 10,
-            "reorder_quantity": 20,
-            "restock_level": 2
+            # "reorder_quantity": 20,
+            # "restock_level": 2
         }
         record = Inventory()
         record.deserialize(data)
@@ -95,8 +95,8 @@ class TestInventory(unittest.TestCase):
         self.assertEqual(record.name, "monitor")
         self.assertEqual(record.condition, Inventory.Condition.NEW)
         self.assertEqual(record.quantity, 10)
-        self.assertEqual(record.reorder_quantity, 20)
-        self.assertEqual(record.restock_level, 2)
+        # self.assertEqual(record.reorder_quantity, 20)
+        # self.assertEqual(record.restock_level, 2)
 
     def test_inventory_deserialize_partial_fields(self):
         """Test Inventory deserializer for partially available fields"""
@@ -110,8 +110,8 @@ class TestInventory(unittest.TestCase):
         self.assertEqual(record.condition, Inventory.Condition.RETURN)
         self.assertEqual(record.name, None)
         self.assertEqual(record.quantity, None)
-        self.assertEqual(record.reorder_quantity, None)
-        self.assertEqual(record.restock_level, None)
+        # self.assertEqual(record.reorder_quantity, None)
+        # self.assertEqual(record.restock_level, None)
 
     def test_deserialize_missing_data(self):
         """It should not deserialize inventory with missing data"""
@@ -128,7 +128,7 @@ class TestInventory(unittest.TestCase):
     def test_deserialize_bad_type_fields(self):
         record = InventoryFactory()
         request = record.serialize()
-        for field in ["quantity", "reorder_quantity", "restock_level"]:
+        for field in ["quantity"]:
             temp = request[field]
             request[field] = "100"
             self.assertRaises(DataValidationError, record.deserialize, request)
@@ -137,7 +137,7 @@ class TestInventory(unittest.TestCase):
     def test_deserialize_out_of_range_values(self):
         record = InventoryFactory()
         request = record.serialize()
-        for field in ["quantity", "reorder_quantity", "restock_level"]:
+        for field in ["quantity"]:
             temp = request[field]
             request[field] = -20
             self.assertRaises(OutOfRangeError, record.deserialize, request)
@@ -171,8 +171,8 @@ class TestInventory(unittest.TestCase):
 
         request_body = record.serialize()
         request_body["quantity"] = 10
-        request_body["restock_level"] = 2
-        request_body["reorder_quantity"] = 15
+        # request_body["restock_level"] = 2
+        # request_body["reorder_quantity"] = 15
         new_data = Inventory()
         new_data.deserialize(request_body)
         record.update(new_data)

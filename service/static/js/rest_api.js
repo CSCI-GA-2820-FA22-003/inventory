@@ -10,8 +10,8 @@ $(function () {
         $("#condition").val(res.condition)
         $("#name").val(res.name);
         $("#quantity").val(res.quantity);
-        $("#reorder_quantity").val(res.reorder_quantity);
-        $("#restock_level").val(res.restock_level);
+        // $("#reorder_quantity").val(res.reorder_quantity);
+        // $("#restock_level").val(res.restock_level);
         
         if (res.active == true) {
             $("#active").val("True");
@@ -27,8 +27,8 @@ $(function () {
         $("#name").val("");
         $("#quantity").val("");
         $("#operator").val("");
-        $("#reorder_quantity").val("");
-        $("#restock_level").val("");
+        // $("#reorder_quantity").val("");
+        // $("#restock_level").val("");
         $("#active").val("");
         $("#ordered_quantity").val("")
     }
@@ -49,8 +49,8 @@ $(function () {
         let condition = $("#condition").val();
         let name = $("#name").val();
         let quantity = parseInt($("#quantity").val());
-        let reorder_quantity = parseInt($("#reorder_quantity").val());
-        let restock_level = parseInt($("#restock_level").val());
+        // let reorder_quantity = parseInt($("#reorder_quantity").val());
+        // let restock_level = parseInt($("#restock_level").val());
         let active = $("#active").val() == "True";
 
         let data = {
@@ -58,8 +58,8 @@ $(function () {
             "condition": condition,
             "name": name,
             "quantity": quantity,
-            "reorder_quantity": reorder_quantity,
-            "restock_level": restock_level,
+            // "reorder_quantity": reorder_quantity,
+            // "restock_level": restock_level,
             "active": active,
         };
 
@@ -95,16 +95,16 @@ $(function () {
         condition = condition.toUpperCase();
         let name = $("#name").val();
         let quantity = parseInt($("#quantity").val());
-        let reorder_quantity = parseInt($("#reorder_quantity").val());
-        let restock_level = parseInt($("#restock_level").val());
+        // let reorder_quantity = parseInt($("#reorder_quantity").val());
+        // let restock_level = parseInt($("#restock_level").val());
         let active = $("#active").val() == "True";
 
         let data = {
             "product_id": product_id,
             "name": name,
             "quantity": quantity,
-            "reorder_quantity": reorder_quantity,
-            "restock_level": restock_level,
+            // "reorder_quantity": reorder_quantity,
+            // "restock_level": restock_level,
             "active": active,
         };
 
@@ -341,14 +341,14 @@ $(function () {
             table += '<th class="col-md-2">Condition</th>'
             table += '<th class="col-md-2">Name</th>'
             table += '<th class="col-md-2">Quantity</th>'
-            table += '<th class="col-md-2">Reorder Quantity</th>'
-            table += '<th class="col-md-2">Restock Level</th>'
+            // table += '<th class="col-md-2">Reorder Quantity</th>'
+            // table += '<th class="col-md-2">Restock Level</th>'
             table += '<th class="col-md-2">Active</th>'
             table += '</tr></thead><tbody>'
             let firstRecord = "";
             for(let i = 0; i < res.length; i++) {
                 let record = res[i];
-                table +=  `<tr id="row_${i}"><td>${record.product_id}</td><td>${record.condition}</td><td>${record.name}</td><td>${record.quantity}</td><td>${record.reorder_quantity}</td><td>${record.restock_level}</td><td>${record.active}</td></tr>`;
+                table +=  `<tr id="row_${i}"><td>${record.product_id}</td><td>${record.condition}</td><td>${record.name}</td><td>${record.quantity}</td><td>${record.active}</td></tr>`;
                 if (i == 0) {
                     firstRecord = record;
                 }

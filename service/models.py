@@ -51,8 +51,8 @@ class Inventory(db.Model):
     condition = db.Column(db.Enum(Condition), nullable=False,
                           default=Condition.NEW.name, primary_key=True)
     quantity = db.Column(db.Integer, nullable=False, default=0)
-    reorder_quantity = db.Column(db.Integer, nullable=False, default=0)
-    restock_level = db.Column(db.Integer, nullable=False, default=0)
+    # reorder_quantity = db.Column(db.Integer, nullable=False, default=0)
+    # restock_level = db.Column(db.Integer, nullable=False, default=0)
     active = db.Column(db.Boolean, nullable=False, default=True)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow,
@@ -78,10 +78,10 @@ class Inventory(db.Model):
         if new_data.quantity is not None:
             self.quantity = new_data.quantity
         self.name = new_data.name or self.name
-        if new_data.reorder_quantity is not None:
-            self.reorder_quantity = new_data.reorder_quantity
-        if new_data.restock_level is not None:
-            self.restock_level = new_data.restock_level
+        # if new_data.reorder_quantity is not None:
+        #     self.reorder_quantity = new_data.reorder_quantity
+        # if new_data.restock_level is not None:
+        #     self.restock_level = new_data.restock_level
         self.updated_at = datetime.utcnow()
         logger.info("Saving %s", self.name)
         db.session.commit()
@@ -99,8 +99,8 @@ class Inventory(db.Model):
             "name": self.name,
             "condition": self.condition.value,
             "quantity": self.quantity,
-            "reorder_quantity": self.reorder_quantity,
-            "restock_level": self.restock_level,
+            # "reorder_quantity": self.reorder_quantity,
+            # "restock_level": self.restock_level,
             "active": self.active
         }
 
@@ -150,7 +150,7 @@ class Inventory(db.Model):
             else:
                 raise TypeError
 
-        for field in ["quantity", "reorder_quantity", "restock_level"]:
+        for field in ["quantity",]:
             if data.get(field):
                 if not isinstance(data.get(field), int):
                     raise TypeError
